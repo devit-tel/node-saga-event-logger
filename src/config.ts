@@ -21,15 +21,19 @@ export const server = {
 };
 
 export const kafkaTopicName = {
+  // Publish to specified task
   task: `${process.env['kafka.prefix'] || 'node'}.${kafkaConstant.PREFIX}.${
     kafkaConstant.TASK_TOPIC_NAME
   }`,
+  // Publish to system task
   systemTask: `${process.env['kafka.prefix'] || 'node'}.${
     kafkaConstant.PREFIX
   }.${kafkaConstant.SYSTEM_TASK_TOPIC_NAME}`,
+  // Publish to store event
   store: `${process.env['kafka.prefix'] || 'node'}.${kafkaConstant.PREFIX}.${
     kafkaConstant.STORE_TOPIC_NAME
   }`,
+  // Subscriptions to update event
   event: `${process.env['kafka.prefix'] || 'node'}.${kafkaConstant.PREFIX}.${
     kafkaConstant.EVENT_TOPIC
   }`,

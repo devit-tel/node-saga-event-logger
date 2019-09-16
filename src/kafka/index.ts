@@ -35,14 +35,14 @@ export const consumerClient = new KafkaConsumer(config.kafkaConsumer, {});
 export const systemConsumerClient = new KafkaConsumer(config.kafkaConsumer, {});
 export const producerClient = new Producer(config.kafkaProducer, {});
 
-consumerClient.setDefaultConsumeTimeout(10);
+consumerClient.setDefaultConsumeTimeout(1);
 consumerClient.connect();
 consumerClient.on('ready', () => {
   console.log('Consumer kafka are ready');
   consumerClient.subscribe([config.kafkaTopicName.event]);
 });
 
-consumerClient.setDefaultConsumeTimeout(10);
+consumerClient.setDefaultConsumeTimeout(1);
 systemConsumerClient.connect();
 systemConsumerClient.on('ready', () => {
   console.log('System consumer kafka are ready');
