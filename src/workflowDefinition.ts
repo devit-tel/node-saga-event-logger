@@ -2,12 +2,10 @@ import * as R from 'ramda';
 import { FailureStrategies } from './constants/workflow';
 import { TaskTypes, TaskTypesList } from './constants/task';
 import { isValidName, isValidRev } from './utils/common';
-import { ITaskDefinition } from './taskDefinition';
 
 export interface IBaseTask {
   name: string;
   taskReferenceName: string;
-  overideOptions?: ITaskDefinition;
   inputParameters: {
     [key: string]: string | number;
   };
@@ -15,10 +13,12 @@ export interface IBaseTask {
 
 export interface ITaskTask extends IBaseTask {
   type: TaskTypes.Task;
-  retry: {
+  retry?: {
     limit: number;
     delay: number;
   };
+  ackTimeout?: number;
+  timeout?: number;
 }
 
 export interface ICompensateTask extends IBaseTask {

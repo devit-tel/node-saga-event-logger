@@ -271,6 +271,7 @@ export class TaskInstanceStore {
     autoDispatch: boolean = false,
     overideTask: ITask | object = {},
   ): Promise<ITask> => {
+    const taskDefinition = await taskDefinitionStore.get(workflowTask.name);
     const task = await this.client.create({
       taskId: undefined,
       taskName: workflowTask.name,
@@ -305,8 +306,15 @@ export class TaskInstanceStore {
         workflowTask.type === TaskTypes.SubWorkflow
           ? workflowTask.workflow
           : undefined,
+      ackTimeout: R.pathOr(
+        taskDefinition.ackTimeout,
+        ['ackTimeout'],
+        workflowTask,
+      ),
+      timeout: R.pathOr(taskDefinition.timeout, ['timeout'], workflowTask),
       ...overideTask,
     });
+
     if (autoDispatch) {
       dispatch(
         task,
