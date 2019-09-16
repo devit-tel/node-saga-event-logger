@@ -48,6 +48,9 @@ const taskSchema = new mongoose.Schema(
     },
     decisions: mongoose.Schema.Types.Mixed,
     defaultDecision: [mongoose.Schema.Types.Mixed],
+    delay: Number,
+    ackTimeout: Number,
+    timeout: Number,
   },
   {
     toObject: {

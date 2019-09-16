@@ -280,7 +280,6 @@ export class TaskInstanceStore {
       transactionId: workflow.transactionId,
       type: workflowTask.type,
       status: TaskStates.Scheduled,
-      retries: R.pathOr(0, ['retry', 'limit'], workflowTask),
       isRetried: false,
       input: mapInputFromTaskData(workflowTask.inputParameters, {
         ...tasksData,
@@ -306,6 +305,17 @@ export class TaskInstanceStore {
         workflowTask.type === TaskTypes.SubWorkflow
           ? workflowTask.workflow
           : undefined,
+      retries: R.pathOr(
+        taskDefinition.retry.limit,
+        ['retry', 'limit'],
+        workflowTask,
+      ),
+      delay: R.pathOr(
+        taskDefinition.retry.delay,
+        ['retry', 'delay'],
+        workflowTask,
+      ),
+      ...overideTask,
       ackTimeout: R.pathOr(
         taskDefinition.ackTimeout,
         ['ackTimeout'],
