@@ -26,7 +26,7 @@ export interface ITask {
     [decision: string]: AllTaskType[];
   };
   defaultDecision?: AllTaskType[];
-  delay: number;
+  retryDelay: number;
   ackTimeout: number;
   timeout: number;
 }

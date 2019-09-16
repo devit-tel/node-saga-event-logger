@@ -310,7 +310,7 @@ export class TaskInstanceStore {
         ['retry', 'limit'],
         workflowTask,
       ),
-      delay: R.pathOr(
+      retryDelay: R.pathOr(
         taskDefinition.retry.delay,
         ['retry', 'delay'],
         workflowTask,
