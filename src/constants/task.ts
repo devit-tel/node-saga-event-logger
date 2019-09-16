@@ -20,11 +20,12 @@ export enum TaskStates {
 }
 
 export const TaskNextStates = {
-  [TaskStates.Scheduled]: [TaskStates.Inprogress],
+  [TaskStates.Scheduled]: [TaskStates.Inprogress, TaskStates.Timeout],
   [TaskStates.Inprogress]: [
     TaskStates.Completed,
     TaskStates.Failed,
     TaskStates.Inprogress,
+    TaskStates.Timeout,
   ],
   [TaskStates.Completed]: [],
   [TaskStates.Failed]: [],
