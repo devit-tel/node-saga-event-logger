@@ -31,5 +31,6 @@ This is prototype of saga implementation, written in Node.
 
 ## Known issues
 
-- parallel tasks can be empty
-- Sub workflow won't get compensate
+- [ ] parallel tasks can be empty
+- [ ] Sub workflow won't get compensate
+- [ ] Task/Workflow data send as string's ISO time format instead of number
