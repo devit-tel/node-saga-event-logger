@@ -21,8 +21,8 @@ const transacationSchema = new mongoose.Schema(
     },
     input: mongoose.Schema.Types.Mixed,
     output: mongoose.Schema.Types.Mixed,
-    createTime: Date,
-    endTime: Date,
+    createTime: Number,
+    endTime: Number,
     workflowDefinition: mongoose.Schema.Types.Mixed,
   },
   {

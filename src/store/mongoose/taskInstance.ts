@@ -30,9 +30,9 @@ const taskSchema = new mongoose.Schema(
     isRetried: Boolean,
     input: mongoose.Schema.Types.Mixed,
     output: mongoose.Schema.Types.Mixed,
-    createTime: Date, // time that push into Kafka
-    startTime: Date, // time that worker ack
-    endTime: Date, // time that task finish/failed/cancel
+    createTime: Number, // time that push into Kafka
+    startTime: Number, // time that worker ack
+    endTime: Number, // time that task finish/failed/cancel
     logs: [String],
     type: String,
     parallelTasks: mongoose.Schema.Types.Mixed,
