@@ -65,6 +65,14 @@ const processSubWorkflowTask = async (systemTask: ITask) => {
   );
 };
 
+const processActivityTask = (task: ITask) => {
+  return taskInstanceStore.reload({
+    ...task,
+    retries: task.retries - 1,
+    isRetried: true,
+  });
+};
+
 export const executor = async () => {
   try {
     const tasks: ITask[] = await poll(systemConsumerClient);
@@ -79,6 +87,9 @@ export const executor = async () => {
             break;
           case TaskTypes.SubWorkflow:
             await processSubWorkflowTask(task);
+            break;
+          case TaskTypes.Task:
+            await processActivityTask(task);
             break;
           default:
             throw new Error(`Task: ${task.type} is not system task`);

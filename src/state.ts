@@ -407,23 +407,9 @@ const handleFailedWorkflow = (workflow: IWorkflow) =>
     status: TransactionStates.Failed,
   });
 
-const handleFailedTask = async (task: ITask, isTimeout: boolean = false) => {
-  // If got change to retry
-  if (task.retries > 0 && !isTimeout) {
-    const { workflow, taskData, currentTaskPath } = await getTaskInfo(task);
-    await taskInstanceStore.delete(task.taskId);
-    // TODO Much delay before dispatch
-    await taskInstanceStore.create(
-      workflow,
-      R.path(currentTaskPath, workflow.workflowDefinition.tasks),
-      taskData,
-      true,
-      {
-        retries: task.retries - 1,
-        isRetried: true,
-      },
-    );
-  } else {
+const handleFailedTask = async (task: ITask) => {
+  // if cannot retry anymore
+  if (task.retries <= 0) {
     const tasksData = await taskInstanceStore.getAll(task.workflowId);
     const runningTasks = tasksData.filter((taskData: ITask) => {
       [TaskStates.Inprogress, TaskStates.Scheduled].includes(taskData.status) &&
@@ -480,7 +466,7 @@ const processTasksOfWorkflow = async (
           break;
         case TaskStates.Timeout:
           // Timeout task will make workflow timeout and manual fix
-          await handleFailedTask(task, true);
+          await handleFailedTask(task);
           break;
         default:
           break;

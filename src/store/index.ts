@@ -264,6 +264,32 @@ export class TaskInstanceStore {
     return this.client.getAll(workflowId);
   }
 
+  reload = async (taskData: ITask): Promise<ITask> => {
+    await this.delete(taskData.taskId);
+    const task = await this.client.create({
+      ...taskData,
+      taskId: undefined,
+      status: TaskStates.Scheduled,
+      output: {},
+      createTime: Date.now(),
+      startTime: Date.now(),
+      endTime: null,
+    });
+    dispatch(
+      task,
+      task.transactionId,
+      ![TaskTypes.Task, TaskTypes.Compensate].includes(task.type),
+    );
+    sendEvent({
+      transactionId: task.transactionId,
+      type: 'TASK',
+      isError: false,
+      timestamp: Date.now(),
+      details: task,
+    });
+    return task;
+  };
+
   create = async (
     workflow: IWorkflow,
     workflowTask: AllTaskType,
@@ -315,7 +341,6 @@ export class TaskInstanceStore {
         ['retry', 'delay'],
         workflowTask,
       ),
-      ...overideTask,
       ackTimeout: R.pathOr(
         taskDefinition.ackTimeout,
         ['ackTimeout'],

@@ -48,7 +48,7 @@ const taskSchema = new mongoose.Schema(
     },
     decisions: mongoose.Schema.Types.Mixed,
     defaultDecision: [mongoose.Schema.Types.Mixed],
-    delay: Number,
+    retryDelay: Number,
     ackTimeout: Number,
     timeout: Number,
   },
@@ -105,8 +105,13 @@ export class TaskInstanceMongooseStore extends MongooseStore
                 },
               }
             : {}),
-          endTime:
-            taskUpdate.status === TaskStates.Completed ? Date.now() : null,
+          endTime: [
+            TaskStates.Completed,
+            TaskStates.Failed,
+            TaskStates.Timeout,
+          ].includes(taskUpdate.status)
+            ? Date.now()
+            : null,
         },
         {
           new: true,
