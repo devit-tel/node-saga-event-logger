@@ -10,3 +10,4 @@ LICENSE
 .vscode
 coverage
 build
+.env
