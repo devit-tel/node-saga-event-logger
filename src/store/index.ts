@@ -266,15 +266,17 @@ export class TaskInstanceStore {
 
   reload = async (taskData: ITask): Promise<ITask> => {
     await this.delete(taskData.taskId);
-    const task = await this.client.create({
-      ...taskData,
-      taskId: undefined,
-      status: TaskStates.Scheduled,
-      output: {},
-      createTime: Date.now(),
-      startTime: Date.now(),
-      endTime: null,
-    });
+    const task = await this.client.create(
+      R.omit(['_id'], {
+        ...taskData,
+        taskId: undefined,
+        status: TaskStates.Scheduled,
+        output: {},
+        createTime: Date.now(),
+        startTime: Date.now(),
+        endTime: null,
+      }),
+    );
     dispatch(
       task,
       task.transactionId,

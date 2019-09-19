@@ -40,13 +40,11 @@ export const kafkaTopicName = {
 };
 
 export const kafkaAdmin = {
-  'client.id': 'saga-pm',
   ...pickAndReplaceFromENV('^kafka\\.conf\\.'),
   ...pickAndReplaceFromENV('^admin\\.kafka\\.conf\\.'),
 };
 
 export const kafkaConsumer = {
-  'client.id': 'saga-pm',
   'enable.auto.commit': 'false',
   'group.id': 'saga-pm-consumer',
   ...pickAndReplaceFromENV('^kafka\\.conf\\.'),
@@ -54,7 +52,6 @@ export const kafkaConsumer = {
 };
 
 export const kafkaSystemConsumer = {
-  'client.id': 'saga-pm',
   'enable.auto.commit': 'false',
   'group.id': 'saga-pm-system-consumer',
   ...pickAndReplaceFromENV('^kafka\\.conf\\.'),

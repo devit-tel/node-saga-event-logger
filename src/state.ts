@@ -487,18 +487,20 @@ const processTasksOfWorkflow = async (
 export const executor = async () => {
   try {
     const tasksUpdate: ITaskUpdate[] = await poll(consumerClient, 200);
-    const groupedTasks = R.toPairs(
-      R.groupBy(R.path(['workflowId']), tasksUpdate),
-    );
+    if (tasksUpdate.length) {
+      const groupedTasks = R.toPairs(
+        R.groupBy(R.path(['workflowId']), tasksUpdate),
+      );
 
-    await Promise.all(
-      groupedTasks.map(
-        ([_workflowId, workflowTasksUpdate]: [string, ITaskUpdate[]]) =>
-          processTasksOfWorkflow(workflowTasksUpdate),
-      ),
-    );
+      await Promise.all(
+        groupedTasks.map(
+          ([_workflowId, workflowTasksUpdate]: [string, ITaskUpdate[]]) =>
+            processTasksOfWorkflow(workflowTasksUpdate),
+        ),
+      );
 
-    consumerClient.commit();
+      consumerClient.commit();
+    }
   } catch (error) {
     // Handle error here
     console.log(error);

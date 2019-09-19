@@ -76,42 +76,47 @@ const processActivityTask = (task: ITask) => {
 export const executor = async () => {
   try {
     const tasks: ITask[] = await poll(systemConsumerClient);
-    for (const task of tasks) {
-      try {
-        switch (task.type) {
-          case TaskTypes.Decision:
-            await processDecisionTask(task);
-            break;
-          case TaskTypes.Parallel:
-            await processParallelTask(task);
-            break;
-          case TaskTypes.SubWorkflow:
-            await processSubWorkflowTask(task);
-            break;
-          case TaskTypes.Task:
-            await processActivityTask(task);
-            break;
-          default:
-            throw new Error(`Task: ${task.type} is not system task`);
+    if (tasks.length) {
+      for (const task of tasks) {
+        try {
+          console.log('running');
+          switch (task.type) {
+            case TaskTypes.Decision:
+              await processDecisionTask(task);
+              break;
+            case TaskTypes.Parallel:
+              await processParallelTask(task);
+              break;
+            case TaskTypes.SubWorkflow:
+              await processSubWorkflowTask(task);
+              break;
+            case TaskTypes.Task:
+              // It's not system task
+              // I return to prevent it from update the task
+              await processActivityTask(task);
+              continue;
+            default:
+              throw new Error(`Task: ${task.type} is not system task`);
+          }
+          await taskInstanceStore.update({
+            isSystem: true,
+            taskId: task.taskId,
+            transactionId: task.transactionId,
+            status: TaskStates.Completed,
+          });
+        } catch (error) {
+          sendEvent({
+            type: 'TASK',
+            transactionId: task.transactionId,
+            timestamp: Date.now(),
+            details: task,
+            isError: true,
+            error: error.toString(),
+          });
         }
-        await taskInstanceStore.update({
-          isSystem: true,
-          taskId: task.taskId,
-          transactionId: task.transactionId,
-          status: TaskStates.Completed,
-        });
-      } catch (error) {
-        sendEvent({
-          type: 'TASK',
-          transactionId: task.transactionId,
-          timestamp: Date.now(),
-          details: task,
-          isError: true,
-          error: error.toString(),
-        });
       }
+      systemConsumerClient.commit();
     }
-    systemConsumerClient.commit();
   } catch (error) {
     // Handle error here
     console.log(error);
