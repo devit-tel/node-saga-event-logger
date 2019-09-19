@@ -79,7 +79,6 @@ export const executor = async () => {
     if (tasks.length) {
       for (const task of tasks) {
         try {
-          console.log('running');
           switch (task.type) {
             case TaskTypes.Decision:
               await processDecisionTask(task);
