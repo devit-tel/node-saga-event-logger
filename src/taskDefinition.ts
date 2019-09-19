@@ -49,11 +49,11 @@ const taskValidation = (taskDefinition: ITaskDefinition): string[] => {
 export class TaskDefinition implements ITaskDefinition {
   name: string;
   description: string = 'No description';
-  ackTimeout: number = 5000;
-  timeout: number = 30000;
+  ackTimeout: number = 0;
+  timeout: number = 0;
   retry: ITaskDefinition['retry'] = {
     limit: 0,
-    delay: 5000,
+    delay: 1000,
   };
   document: ITaskDefinition['document'] = {
     inputs: [],
