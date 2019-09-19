@@ -26,7 +26,7 @@ This is prototype of saga implementation, written in Node.
 - [x] Compensate workflow
 - [x] Publish event to kafka
 - [x] Update Workflow/Transaction's output
-- [ ] Time keeper
+- [x] Time keeper
 - [ ] Refactor redundant action in "STATE"
 - [ ] Watch for taskDefinition changed
 - [ ] Rewrite all the test XD
