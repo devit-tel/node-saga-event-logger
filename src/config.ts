@@ -1,5 +1,4 @@
 import * as dotenv from 'dotenv';
-import { StoreType } from './constants/store';
 import * as kafkaConstant from './constants/kafka';
 
 dotenv.config();
@@ -50,7 +49,7 @@ export const kafkaEventConfig = {
 };
 
 export const eventStore = {
-  type: StoreType.Elasticsearch,
+  type: process.env['event-store.type'],
   elasticsearchConfig: {
     index: `saga-${saga.namespace}-event`,
     config: pickAndReplaceFromENV('^event-store\\.elasticsearch\\.'),
