@@ -18,14 +18,15 @@ export interface IEvent {
   timestamp: number;
   isError: boolean;
   error?: string;
+  _id?: string;
 }
 
 export const consumerEventClient = new KafkaConsumer(
-  config.kafkaEventConsumer,
-  {},
+  config.kafkaEventConfig.consumer,
+  config.kafkaEventConfig.topic,
 );
 
-consumerEventClient.setDefaultConsumeTimeout(1);
+consumerEventClient.setDefaultConsumeTimeout(100);
 consumerEventClient.connect();
 consumerEventClient.on('ready', () => {
   console.log('Consumer Event kafka are ready');
@@ -35,6 +36,7 @@ consumerEventClient.on('ready', () => {
 export const poll = (
   consumer: KafkaConsumer,
   messageNumber: number = 100,
+  kafkaGenericId: boolean = false,
 ): Promise<any[]> =>
   new Promise((resolve: Function, reject: Function) => {
     consumer.consume(
@@ -42,9 +44,15 @@ export const poll = (
       (error: Error, messages: kafkaConsumerMessage[]) => {
         if (error) return reject(error);
         resolve(
-          messages.map((message: kafkaConsumerMessage) =>
-            jsonTryParse(message.value.toString(), {}),
-          ),
+          messages.map((message: kafkaConsumerMessage) => {
+            if (kafkaGenericId) {
+              return {
+                ...jsonTryParse(message.value.toString(), {}),
+                _id: `${message.topic}-${message.partition}-${message.offset}`,
+              };
+            }
+            return jsonTryParse(message.value.toString(), {});
+          }),
         );
       },
     );

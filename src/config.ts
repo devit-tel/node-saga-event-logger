@@ -21,7 +21,7 @@ export const saga = {
 export const server = {
   enabled: process.env['server.enabled'] === 'true',
   port: +process.env['server.port'] || 8080,
-  hostname: process.env['server.hostname'] || '127.0.0.1',
+  hostname: process.env['server.hostname'] || '0.0.0.0',
 };
 
 export const kafkaTopicName = {
@@ -35,17 +35,24 @@ export const kafkaTopicName = {
   event: `${saga.namespace}.${kafkaConstant.PREFIX}.${kafkaConstant.EVENT_TOPIC}`,
 };
 
-export const kafkaEventConsumer = {
-  'enable.auto.commit': 'false',
-  'group.id': 'saga-event-consumer',
-  ...pickAndReplaceFromENV('^kafka\\.conf\\.'),
-  ...pickAndReplaceFromENV('^consumer\\.kafka\\.conf\\.'),
+export const kafkaEventConfig = {
+  consumer: {
+    'enable.auto.commit': 'false',
+    'group.id': `saga-${saga.namespace}-event-consumer`,
+    ...pickAndReplaceFromENV('^kafka\\.conf\\.'),
+    ...pickAndReplaceFromENV('^event\\.kafka\\.conf\\.'),
+  },
+  topic: {
+    'auto.offset.reset': 'earliest',
+    ...pickAndReplaceFromENV('^kafka\\.topic-conf\\.'),
+    ...pickAndReplaceFromENV('^event\\.kafka\\.topic-conf\\.'),
+  },
 };
 
 export const eventStore = {
   type: StoreType.Elasticsearch,
   elasticsearchConfig: {
     index: `saga-${saga.namespace}-event`,
-    config: pickAndReplaceFromENV('^event\\.elasticsearch\\.'),
+    config: pickAndReplaceFromENV('^event-store\\.elasticsearch\\.'),
   },
 };

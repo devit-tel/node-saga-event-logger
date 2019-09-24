@@ -62,6 +62,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
           index: {
             _index: this.index,
             _type: this.index,
+            _id: event._id,
           },
         });
         result.push(event);

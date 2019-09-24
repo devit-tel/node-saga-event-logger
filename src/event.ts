@@ -23,7 +23,7 @@ const retryBulkCreate = async (
 
 export const executor = async () => {
   try {
-    const events: IEvent[] = await poll(consumerEventClient, 200);
+    const events: IEvent[] = await poll(consumerEventClient, 200, true);
     if (events.length) {
       await retryBulkCreate(events, Number.MAX_VALUE, 5000);
       console.log(`Inserted ${events.length} rows`);
