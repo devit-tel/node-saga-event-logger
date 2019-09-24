@@ -58,14 +58,15 @@ export class EventElasticsearchStore extends ElasticsearchStore
   bulkCreate = async (events: IEvent[]): Promise<IEvent[]> => {
     await this.client.bulk({
       body: events.reduce((result: any[], event: IEvent) => {
+        const { _id, ...eventData } = event
         result.push({
           index: {
             _index: this.index,
             _type: 'response',
-            _id: event._id,
+            _id
           },
         });
-        result.push(event);
+        result.push(eventData);
         return result;
       }, []),
     });
