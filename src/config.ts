@@ -36,7 +36,7 @@ export const kafkaTopicName = {
 };
 
 export const kafkaEventConfig = {
-  consumer: {
+  config: {
     'enable.auto.commit': 'false',
     'group.id': `saga-${saga.namespace}-event-consumer`,
     ...pickAndReplaceFromENV('^kafka\\.conf\\.'),

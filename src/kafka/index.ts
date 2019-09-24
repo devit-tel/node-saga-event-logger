@@ -22,7 +22,7 @@ export interface IEvent {
 }
 
 export const consumerEventClient = new KafkaConsumer(
-  config.kafkaEventConfig.consumer,
+  config.kafkaEventConfig.config,
   config.kafkaEventConfig.topic,
 );
 
