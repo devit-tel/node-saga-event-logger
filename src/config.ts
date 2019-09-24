@@ -14,6 +14,10 @@ const pickAndReplaceFromENV = (template: string) =>
     return result;
   }, {});
 
+export const saga = {
+  namespace: process.env['saga.namespace'] || 'node',
+};
+
 export const server = {
   enabled: process.env['server.enabled'] === 'true',
   port: +process.env['server.port'] || 8080,
@@ -22,119 +26,26 @@ export const server = {
 
 export const kafkaTopicName = {
   // Publish to specified task
-  task: `${process.env['kafka.prefix'] || 'node'}.${kafkaConstant.PREFIX}.${
-    kafkaConstant.TASK_TOPIC_NAME
-  }`,
+  task: `${saga.namespace}.${kafkaConstant.PREFIX}.${kafkaConstant.TASK_TOPIC_NAME}`,
   // Publish to system task
-  systemTask: `${process.env['kafka.prefix'] || 'node'}.${
-    kafkaConstant.PREFIX
-  }.${kafkaConstant.SYSTEM_TASK_TOPIC_NAME}`,
+  systemTask: `${saga.namespace}.${kafkaConstant.PREFIX}.${kafkaConstant.SYSTEM_TASK_TOPIC_NAME}`,
   // Publish to store event
-  store: `${process.env['kafka.prefix'] || 'node'}.${kafkaConstant.PREFIX}.${
-    kafkaConstant.STORE_TOPIC_NAME
-  }`,
+  store: `${saga.namespace}.${kafkaConstant.PREFIX}.${kafkaConstant.STORE_TOPIC_NAME}`,
   // Subscriptions to update event
-  event: `${process.env['kafka.prefix'] || 'node'}.${kafkaConstant.PREFIX}.${
-    kafkaConstant.EVENT_TOPIC
-  }`,
+  event: `${saga.namespace}.${kafkaConstant.PREFIX}.${kafkaConstant.EVENT_TOPIC}`,
 };
 
-export const kafkaAdmin = {
-  ...pickAndReplaceFromENV('^kafka\\.conf\\.'),
-  ...pickAndReplaceFromENV('^admin\\.kafka\\.conf\\.'),
-};
-
-export const kafkaConsumer = {
+export const kafkaEventConsumer = {
   'enable.auto.commit': 'false',
-  'group.id': 'saga-pm-consumer',
+  'group.id': 'saga-event-consumer',
   ...pickAndReplaceFromENV('^kafka\\.conf\\.'),
   ...pickAndReplaceFromENV('^consumer\\.kafka\\.conf\\.'),
 };
 
-export const kafkaSystemConsumer = {
-  'enable.auto.commit': 'false',
-  'group.id': 'saga-pm-system-consumer',
-  ...pickAndReplaceFromENV('^kafka\\.conf\\.'),
-  ...pickAndReplaceFromENV('^system-consumer\\.kafka\\.conf\\.'),
-};
-
-export const kafkaProducer = {
-  'client.id': 'saga-pm',
-  'compression.type': 'snappy',
-  'retry.backoff.ms': '100',
-  'enable.idempotence': 'true',
-  'message.send.max.retries': '100000',
-  'socket.keepalive.enable': 'true',
-  'queue.buffering.max.messages': '10000',
-  'queue.buffering.max.ms': '1',
-  'batch.num.messages': '100',
-  'delivery.report.only.error': 'true',
-  dr_cb: 'true',
-  ...pickAndReplaceFromENV('^kafka\\.conf\\.'),
-  ...pickAndReplaceFromENV('^producer\\.kafka\\.conf\\.'),
-};
-
-export const taskDefinitionStore = {
-  type: StoreType.ZooKeeper,
-  zookeeperConfig: {
-    root: '/saga-pm/task-definition',
-    connectionString: process.env['task-definition.zookeeper.connections'],
-    options: {
-      sessionTimeout: 30000,
-      spinDelay: 1000,
-      retries: 0,
-    },
-  },
-};
-
-export const workflowDefinitionStore = {
-  type: StoreType.ZooKeeper,
-  zookeeperConfig: {
-    root: '/saga-pm/workflow-definition',
-    connectionString: process.env['workflow-definition.zookeeper.connections'],
-    options: {
-      sessionTimeout: 30000,
-      spinDelay: 1000,
-      retries: 0,
-    },
-  },
-};
-
-export const taskInstanceStore = {
-  type: StoreType.MongoDB,
-  mongoDBConfig: {
-    uri: process.env['task-instance.mongodb.uri'],
-    options: {
-      useNewUrlParser: true,
-      reconnectTries: Number.MAX_SAFE_INTEGER,
-      poolSize: 100,
-      useFindAndModify: false,
-    },
-  },
-};
-
-export const workflowInstanceStore = {
-  type: StoreType.MongoDB,
-  mongoDBConfig: {
-    uri: process.env['workflow-instance.mongodb.uri'],
-    options: {
-      useNewUrlParser: true,
-      reconnectTries: Number.MAX_SAFE_INTEGER,
-      poolSize: 100,
-      useFindAndModify: false,
-    },
-  },
-};
-
-export const transactionInstanceStore = {
-  type: StoreType.MongoDB,
-  mongoDBConfig: {
-    uri: process.env['transaction-instance.mongodb.uri'],
-    options: {
-      useNewUrlParser: true,
-      reconnectTries: Number.MAX_SAFE_INTEGER,
-      poolSize: 100,
-      useFindAndModify: false,
-    },
+export const eventStore = {
+  type: StoreType.Elasticsearch,
+  elasticsearchConfig: {
+    index: `saga-${saga.namespace}-event`,
+    config: pickAndReplaceFromENV('^event\\.elasticsearch\\.'),
   },
 };
