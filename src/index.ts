@@ -1,26 +1,28 @@
-import * as config from './config';
-import * as store from './store';
-import { EventElasticsearchStore } from './store/elasticsearch/event';
-import { Server } from './server';
-import { executor as eventExecutor } from './event';
-import { StoreType } from './constants/store';
-import './kafka';
+import * as cluster from 'cluster';
+import * as os from 'os';
+import * as dotenv from 'dotenv';
 
-switch (config.eventStore.type) {
-  case StoreType.Elasticsearch:
-    store.eventStore.setClient(
-      new EventElasticsearchStore(
-        config.eventStore.elasticsearchConfig.config,
-        config.eventStore.elasticsearchConfig.index,
-      ),
-    );
-    break;
-  default:
-    throw new Error(`EventStore Store: ${config.eventStore.type} is invalid`);
+dotenv.config();
+
+const maxRunnerNumber = Number.isNaN(+process.env['runners.max'])
+  ? os.cpus().length
+  : +process.env['runners.max'];
+
+if (cluster.isMaster) {
+  cluster.on('exit', (worker: cluster.Worker) => {
+    console.log(`Worker: ${worker.id} are dead`);
+    cluster.fork();
+    console.log(`Starting new worker`);
+  });
+
+  cluster.on('fork', (worker: cluster.Worker) => {
+    console.log(`Worker ${worker.process.pid} started`);
+  });
+
+  const runnerCount = Math.min(os.cpus().length, maxRunnerNumber);
+  for (let i = 0; i < runnerCount; i++) {
+    cluster.fork();
+  }
+} else {
+  require('./bootstrap');
 }
-
-if (config.server.enabled) {
-  new Server(config.server.port, config.server.hostname, true);
-}
-
-eventExecutor();
