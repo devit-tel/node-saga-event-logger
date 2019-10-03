@@ -5,7 +5,6 @@ import koaRouter = require('koa-router');
 import responseFormatter from './middlewares/responseFormatter';
 import errorHandler from './middlewares/errorHandler';
 import * as v1Router from './routers/v1';
-import { NotFound } from '../errors';
 
 export class Server {
   server: koa;
@@ -35,7 +34,7 @@ export class Server {
     );
 
     mainRouter.all('*', () => {
-      throw new NotFound('Route not found');
+      throw new Error('Route not found');
     });
 
     this.server.use(mainRouter.routes());

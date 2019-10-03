@@ -1,8 +1,8 @@
-import { IEvent, poll, consumerEventClient } from './kafka';
+import { poll, consumerEventClient, IAllEventWithId } from './kafka';
 import { eventStore } from './store';
 
 const retryBulkCreate = async (
-  events: IEvent[],
+  events: IAllEventWithId[],
   retries: number,
   deley: number,
 ) => {
@@ -23,7 +23,7 @@ const retryBulkCreate = async (
 
 export const executor = async () => {
   try {
-    const events: IEvent[] = await poll(consumerEventClient, 200, true);
+    const events: IAllEventWithId[] = await poll(consumerEventClient, 200);
     if (events.length) {
       await retryBulkCreate(events, Number.MAX_VALUE, 5000);
       console.log(`Inserted ${events.length} rows`);

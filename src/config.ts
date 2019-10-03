@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import * as kafkaConstant from './constants/kafka';
+import { Kafka } from '@melonade/melonade-declaration';
 
 dotenv.config();
 const pickAndReplaceFromENV = (template: string) =>
@@ -13,8 +13,8 @@ const pickAndReplaceFromENV = (template: string) =>
     return result;
   }, {});
 
-export const saga = {
-  namespace: process.env['saga.namespace'] || 'node',
+export const melonade = {
+  namespace: process.env['melonade.namespace'] || 'default',
 };
 
 export const server = {
@@ -25,19 +25,21 @@ export const server = {
 
 export const kafkaTopicName = {
   // Publish to specified task
-  task: `${saga.namespace}.${kafkaConstant.PREFIX}.${kafkaConstant.TASK_TOPIC_NAME}`,
+  task: `${Kafka.topicPrefix}.${melonade.namespace}.${Kafka.topicSuffix.task}`,
   // Publish to system task
-  systemTask: `${saga.namespace}.${kafkaConstant.PREFIX}.${kafkaConstant.SYSTEM_TASK_TOPIC_NAME}`,
+  systemTask: `${Kafka.topicPrefix}.${melonade.namespace}.${Kafka.topicSuffix.systemTask}`,
   // Publish to store event
-  store: `${saga.namespace}.${kafkaConstant.PREFIX}.${kafkaConstant.STORE_TOPIC_NAME}`,
+  store: `${Kafka.topicPrefix}.${melonade.namespace}.${Kafka.topicSuffix.store}`,
   // Subscriptions to update event
-  event: `${saga.namespace}.${kafkaConstant.PREFIX}.${kafkaConstant.EVENT_TOPIC}`,
+  event: `${Kafka.topicPrefix}.${melonade.namespace}.${Kafka.topicSuffix.event}`,
+  // Subscriptions to command
+  command: `${Kafka.topicPrefix}.${melonade.namespace}.${Kafka.topicSuffix.command}`,
 };
 
 export const kafkaEventConfig = {
   config: {
     'enable.auto.commit': 'false',
-    'group.id': `saga-${saga.namespace}-event`,
+    'group.id': `melonade-${melonade.namespace}-event`,
     ...pickAndReplaceFromENV('^kafka\\.conf\\.'),
     ...pickAndReplaceFromENV('^event\\.kafka\\.conf\\.'),
   },
@@ -51,7 +53,7 @@ export const kafkaEventConfig = {
 export const eventStore = {
   type: process.env['event-store.type'],
   elasticsearchConfig: {
-    index: `saga-${saga.namespace}-event`,
+    index: `melonade-${melonade.namespace}-event`,
     config: pickAndReplaceFromENV('^event-store\\.elasticsearch\\.'),
   },
 };

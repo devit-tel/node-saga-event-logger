@@ -1,24 +1,12 @@
 import { KafkaConsumer } from 'node-rdkafka';
+import { Kafka } from '@melonade/melonade-declaration';
 import * as config from '../config';
 import { jsonTryParse } from '../utils/common';
+import { AllEvent } from '@melonade/melonade-declaration/build/event';
 
-export interface kafkaConsumerMessage {
-  value: Buffer;
-  size: number;
-  key: string;
-  topic: string;
-  offset: number;
-  partition: number;
-}
-
-export interface IEvent {
-  transactionId: string;
-  type: 'TRANSACTION' | 'WORKFLOW' | 'TASK' | 'SYSTEM';
-  details?: any;
-  timestamp: number;
-  isError: boolean;
-  error?: string;
-  _id?: string;
+export interface IAllEventWithId {
+  _id: string;
+  event: AllEvent;
 }
 
 export const consumerEventClient = new KafkaConsumer(
@@ -36,22 +24,18 @@ consumerEventClient.on('ready', () => {
 export const poll = (
   consumer: KafkaConsumer,
   messageNumber: number = 100,
-  kafkaGenericId: boolean = false,
-): Promise<any[]> =>
+): Promise<IAllEventWithId[]> =>
   new Promise((resolve: Function, reject: Function) => {
     consumer.consume(
       messageNumber,
-      (error: Error, messages: kafkaConsumerMessage[]) => {
+      (error: Error, messages: Kafka.kafkaConsumerMessage[]) => {
         if (error) return reject(error);
         resolve(
-          messages.map((message: kafkaConsumerMessage) => {
-            if (kafkaGenericId) {
-              return {
-                ...jsonTryParse(message.value.toString(), {}),
-                _id: `${message.topic}-${message.partition}-${message.offset}`,
-              };
-            }
-            return jsonTryParse(message.value.toString(), {});
+          messages.map((message: Kafka.kafkaConsumerMessage) => {
+            return {
+              _id: `${message.topic}-${message.partition}-${message.offset}`,
+              event: jsonTryParse(message.value.toString(), {}),
+            };
           }),
         );
       },

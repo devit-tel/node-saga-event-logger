@@ -1,7 +1,8 @@
 // import * as R from 'ramda';
+import { Event } from '@melonade/melonade-declaration';
 import { ElasticsearchStore } from '../elasticsearch';
 import { IEventDataStore, IQuery } from '../../store';
-import { IEvent } from '../../kafka';
+import { IAllEventWithId } from '../../kafka';
 
 // const mapEsReponseToEvent = R.compose(
 //   R.map(R.prop('_source')),
@@ -16,7 +17,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
     this.index = index;
   }
 
-  get = async (transactionId: string): Promise<IEvent[]> => {
+  get = async (transactionId: string): Promise<Event.AllEvent[]> => {
     // const response = await this.client.search({
     //   index: this.index,
     //   type: 'response',
@@ -40,12 +41,12 @@ export class EventElasticsearchStore extends ElasticsearchStore
     query: IQuery,
     limit: number,
     page: number,
-  ): Promise<IEvent[]> => {
+  ): Promise<Event.AllEvent[]> => {
     console.log(query, limit, page);
     return [];
   };
 
-  create = async (event: IEvent): Promise<IEvent> => {
+  create = async (event: Event.AllEvent): Promise<Event.AllEvent> => {
     await this.client.index({
       index: this.index,
       type: 'response',
@@ -55,10 +56,10 @@ export class EventElasticsearchStore extends ElasticsearchStore
     return event;
   };
 
-  bulkCreate = async (events: IEvent[]): Promise<IEvent[]> => {
+  bulkCreate = async (events: IAllEventWithId[]): Promise<any> => {
     const resp = await this.client.bulk({
-      body: events.reduce((result: any[], event: IEvent) => {
-        const { _id, ...eventData } = event;
+      body: events.reduce((result: any[], event: IAllEventWithId) => {
+        const { _id, event: eventData } = event;
         result.push({
           index: {
             _index: this.index,

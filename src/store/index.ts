@@ -1,22 +1,27 @@
-import { IEvent } from '../kafka';
-import { TransactionStates } from '../constants/transaction';
+import { State, Event } from '@melonade/melonade-declaration';
+import { IAllEventWithId } from '../kafka';
+
+export enum StoreType {
+  MongoDB = 'MONGODB',
+  Elasticsearch = 'ELASTICSEARCH',
+}
 
 export interface IStore {
   isHealthy(): boolean;
 }
 
 export interface IQuery {
-  status: TransactionStates;
+  status: State.TransactionStates;
   workflowName: string;
   from: number;
   to: number;
 }
 
 export interface IEventDataStore extends IStore {
-  get(transactionId: string): Promise<IEvent[]>;
-  query(query: IQuery, limit: number, page: number): Promise<IEvent[]>;
-  create(event: IEvent): Promise<IEvent>;
-  bulkCreate(events: IEvent[]): Promise<IEvent[]>;
+  get(transactionId: string): Promise<Event.AllEvent[]>;
+  query(query: IQuery, limit: number, page: number): Promise<Event.AllEvent[]>;
+  create(event: Event.AllEvent): Promise<Event.AllEvent>;
+  bulkCreate(events: IAllEventWithId[]): Promise<any[]>;
 }
 
 export class EventStore {
@@ -27,20 +32,20 @@ export class EventStore {
     this.client = client;
   }
 
-  get(transactionId: string): Promise<IEvent[]> {
+  get(transactionId: string): Promise<Event.AllEvent[]> {
     return this.client.get(transactionId);
   }
 
-  query(query: IQuery, limit: number, page: number): Promise<IEvent[]> {
+  query(query: IQuery, limit: number, page: number): Promise<Event.AllEvent[]> {
     return this.client.query(query, limit, page);
   }
 
-  create(workflowDefinition: IEvent): Promise<IEvent> {
-    return this.client.create(workflowDefinition);
+  create(events: Event.AllEvent): Promise<Event.AllEvent> {
+    return this.client.create(events);
   }
 
-  bulkCreate(workflowDefinition: IEvent[]): Promise<IEvent[]> {
-    return this.client.bulkCreate(workflowDefinition);
+  bulkCreate(events: IAllEventWithId[]): Promise<any[]> {
+    return this.client.bulkCreate(events);
   }
 }
 

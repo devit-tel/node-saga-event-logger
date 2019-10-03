@@ -3,11 +3,11 @@ import * as store from './store';
 import { EventElasticsearchStore } from './store/elasticsearch/event';
 import { Server } from './server';
 import { executor as eventExecutor } from './event';
-import { StoreType } from './constants/store';
+
 import './kafka';
 
 switch (config.eventStore.type) {
-  case StoreType.Elasticsearch:
+  case store.StoreType.Elasticsearch:
     store.eventStore.setClient(
       new EventElasticsearchStore(
         config.eventStore.elasticsearchConfig.config,
