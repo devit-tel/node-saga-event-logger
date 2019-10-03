@@ -71,7 +71,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
         return result;
       }, []),
     });
-    if (resp.error) throw new Error('Fail to inserts');
+    if (resp.errors) throw new Error('Fail to inserts');
     return events;
   };
 }
