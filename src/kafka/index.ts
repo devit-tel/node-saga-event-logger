@@ -1,4 +1,4 @@
-import { KafkaConsumer } from 'node-rdkafka';
+import { KafkaConsumer } from '@nv4re/node-rdkafka';
 import { Kafka } from '@melonade/melonade-declaration';
 import * as config from '../config';
 import { jsonTryParse } from '../utils/common';
