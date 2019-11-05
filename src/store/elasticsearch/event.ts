@@ -20,7 +20,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
   get = async (transactionId: string): Promise<Event.AllEvent[]> => {
     // const response = await this.client.search({
     //   index: this.index,
-    //   type: 'response',
+    //   type: 'events',
     //   body: {
     //     from: 0,
     //     size: 1,
@@ -49,7 +49,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
   create = async (event: Event.AllEvent): Promise<Event.AllEvent> => {
     await this.client.index({
       index: this.index,
-      type: 'response',
+      type: 'events',
       body: event,
     });
 
@@ -63,7 +63,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
         result.push({
           index: {
             _index: this.index,
-            _type: 'response',
+            _type: 'events',
             _id,
           },
         });

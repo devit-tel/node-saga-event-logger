@@ -17,12 +17,6 @@ export const melonade = {
   namespace: process.env['melonade.namespace'] || 'default',
 };
 
-export const server = {
-  enabled: process.env['server.enabled'] === 'true',
-  port: +process.env['server.port'] || 8080,
-  hostname: process.env['server.hostname'] || '0.0.0.0',
-};
-
 export const kafkaTopicName = {
   // Publish to specified task
   task: `${Kafka.topicPrefix}.${melonade.namespace}.${Kafka.topicSuffix.task}`,
