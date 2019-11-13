@@ -1,0 +1,25 @@
+name: On tags
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  push-docker:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [10.x]
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: nv4re/melonade-event-logger
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          tag_names: true
+          dockerfile: .Dockerfile
