@@ -1,4 +1,4 @@
-import { State, Event } from '@melonade/melonade-declaration';
+import { Event, State } from '@melonade/melonade-declaration';
 import { IAllEventWithId } from '../kafka';
 
 export enum StoreType {
@@ -26,7 +26,6 @@ export interface IEventDataStore extends IStore {
     from?: number,
     size?: number,
   ): Promise<Event.ITransactionEvent[]>;
-  query(query: IQuery, limit: number, page: number): Promise<Event.AllEvent[]>;
   create(event: Event.AllEvent): Promise<Event.AllEvent>;
   bulkCreate(events: IAllEventWithId[]): Promise<any[]>;
 }
@@ -43,8 +42,20 @@ export class EventStore {
     return this.client.getTransactionData(transactionId);
   }
 
-  query(query: IQuery, limit: number, page: number): Promise<Event.AllEvent[]> {
-    return this.client.query(query, limit, page);
+  listTransaction(
+    statuses: State.TransactionStates[],
+    fromTimestamp: number,
+    toTimestamp: number,
+    from?: number,
+    size?: number,
+  ): Promise<Event.ITransactionEvent[]> {
+    return this.client.listTransaction(
+      statuses,
+      fromTimestamp || 0,
+      toTimestamp || Date.now(),
+      from,
+      size,
+    );
   }
 
   create(events: Event.AllEvent): Promise<Event.AllEvent> {

@@ -15,6 +15,11 @@ export const enumToList = R.compose(
   R.toPairs,
 );
 
+export const toNumber = (value: string, defaultValue: number = 0): number => {
+  if (R.isNaN(+value)) return defaultValue;
+  return +value;
+};
+
 export const concatArray = (target: any[] = [], items: any[] | any): any[] => {
   if (R.isNil(items)) return target;
   if (R.is(Array, items)) return target.concat(items);
