@@ -1,8 +1,8 @@
-import * as R from 'ramda';
 import { Event, State } from '@melonade/melonade-declaration';
-import { ElasticsearchStore } from '../elasticsearch';
-import { IEventDataStore, IQuery } from '../../store';
+import * as R from 'ramda';
 import { IAllEventWithId } from '../../kafka';
+import { IEventDataStore, IQuery } from '../../store';
+import { ElasticsearchStore } from '../elasticsearch';
 
 const mapEsReponseToEvent = R.compose(
   R.map(R.prop('_source')),
@@ -192,56 +192,58 @@ export class EventElasticsearchStore extends ElasticsearchStore
   }
 
   listTransaction = async (
-    statuses: State.TransactionStates[] = [
-      State.TransactionStates.Cancelled,
-      State.TransactionStates.Compensated,
-      State.TransactionStates.Completed,
-      State.TransactionStates.Failed,
-      State.TransactionStates.Paused,
-      State.TransactionStates.Running,
-    ],
+    statuses: State.TransactionStates[],
     fromTimestamp: number,
     toTimestamp: number,
     from: number = 0,
     size: number = 100,
   ): Promise<Event.ITransactionEvent[]> => {
+    const query = {
+      query: {
+        bool: {
+          must: [
+            { match: { type: 'TRANSACTION' } },
+            { match: { isError: false } },
+            {
+              range: {
+                timestamp: {
+                  gte: fromTimestamp,
+                  lte: toTimestamp,
+                },
+              },
+            },
+          ],
+          should: statuses.map((status: State.TransactionStates) => ({
+            match: {
+              'details.status': {
+                query: status,
+                analyzer: 'keyword',
+              },
+            },
+          })),
+        },
+      },
+      from,
+      size,
+      sort: [
+        {
+          timestamp: {
+            order: 'asc',
+          },
+        },
+      ],
+      aggs: {
+        uniq_transactionId: {
+          terms: { field: 'transactionId' },
+        },
+      },
+    };
+    console.log(JSON.stringify(query));
+
     const response = await this.client.search({
       index: this.index,
       type: 'events',
-      body: {
-        query: {
-          bool: {
-            must: [{ match: { type: 'TRANSACTION', isError: false } }],
-            must_not: [],
-            should: statuses.map((status: State.TransactionStates) => ({
-              details: {
-                status,
-              },
-            })),
-          },
-          range: {
-            timestamp: {
-              gte: fromTimestamp,
-              lte: toTimestamp,
-              boost: 2.0,
-            },
-          },
-        },
-        from,
-        size,
-        sort: [
-          {
-            timestamp: {
-              order: 'asc',
-            },
-          },
-        ],
-        aggs: {
-          uniq_transactionId: {
-            terms: { field: 'transactionId' },
-          },
-        },
-      },
+      body: query,
     });
 
     return mapEsReponseToEvent(response) as Event.ITransactionEvent[];

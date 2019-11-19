@@ -43,7 +43,14 @@ export class EventStore {
   }
 
   listTransaction(
-    statuses: State.TransactionStates[],
+    statuses: State.TransactionStates[] = [
+      State.TransactionStates.Cancelled,
+      State.TransactionStates.Compensated,
+      State.TransactionStates.Completed,
+      State.TransactionStates.Failed,
+      State.TransactionStates.Paused,
+      State.TransactionStates.Running,
+    ],
     fromTimestamp: number,
     toTimestamp: number,
     from?: number,

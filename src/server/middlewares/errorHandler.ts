@@ -10,6 +10,7 @@ export default async (ctx: koaRouter.IRouterContext, next: Function) => {
     } else {
       ctx.status = 500;
     }
+
     ctx.body = {
       success: false,
       data: null,
