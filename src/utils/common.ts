@@ -16,7 +16,7 @@ export const enumToList = R.compose(
 );
 
 export const toNumber = (value: string, defaultValue: number = 0): number => {
-  if (R.isNaN(+value)) return defaultValue;
+  if (Number.isNaN(+value)) return defaultValue;
   return +value;
 };
 

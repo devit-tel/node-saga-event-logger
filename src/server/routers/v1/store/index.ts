@@ -6,6 +6,7 @@ export const router = new koaRouter();
 
 router.get('/', async (ctx: koaRouter.IRouterContext) => {
   const { statuses, fromTimestamp, toTimestamp, from, size } = ctx.query;
+  console.log('aaa');
   return eventStore.listTransaction(
     jsonTryParse(statuses, undefined),
     toNumber(fromTimestamp, 0),
@@ -17,5 +18,6 @@ router.get('/', async (ctx: koaRouter.IRouterContext) => {
 
 router.get('/:transactionId', async (ctx: koaRouter.IRouterContext) => {
   const { transactionId } = ctx.params;
+  console.log('bbb');
   return eventStore.getTransactionData(transactionId);
 });
