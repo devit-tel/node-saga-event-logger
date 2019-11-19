@@ -18,7 +18,14 @@ export interface IQuery {
 }
 
 export interface IEventDataStore extends IStore {
-  get(transactionId: string): Promise<Event.AllEvent[]>;
+  getTransactionData(transactionId: string): Promise<Event.AllEvent[]>;
+  listTransaction(
+    statuses: State.TransactionStates[],
+    fromTimestamp: number,
+    toTimestamp: number,
+    from?: number,
+    size?: number,
+  ): Promise<Event.ITransactionEvent[]>;
   query(query: IQuery, limit: number, page: number): Promise<Event.AllEvent[]>;
   create(event: Event.AllEvent): Promise<Event.AllEvent>;
   bulkCreate(events: IAllEventWithId[]): Promise<any[]>;
@@ -32,8 +39,8 @@ export class EventStore {
     this.client = client;
   }
 
-  get(transactionId: string): Promise<Event.AllEvent[]> {
-    return this.client.get(transactionId);
+  getTransactionData(transactionId: string): Promise<Event.AllEvent[]> {
+    return this.client.getTransactionData(transactionId);
   }
 
   query(query: IQuery, limit: number, page: number): Promise<Event.AllEvent[]> {
