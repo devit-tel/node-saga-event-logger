@@ -10,6 +10,11 @@ export interface IStore {
   isHealthy(): boolean;
 }
 
+export interface ITransactionEventPaginate {
+  total: number;
+  events: Event.ITransactionEvent[];
+}
+
 export interface IEventDataStore extends IStore {
   getTransactionData(transactionId: string): Promise<Event.AllEvent[]>;
   listTransaction(
@@ -19,7 +24,7 @@ export interface IEventDataStore extends IStore {
     transactionId?: string,
     from?: number,
     size?: number,
-  ): Promise<Event.ITransactionEvent[]>;
+  ): Promise<ITransactionEventPaginate>;
   create(event: Event.AllEvent): Promise<Event.AllEvent>;
   bulkCreate(events: IAllEventWithId[]): Promise<any[]>;
 }
@@ -50,7 +55,7 @@ export class EventStore {
     transactionId?: string,
     from?: number,
     size?: number,
-  ): Promise<Event.ITransactionEvent[]> {
+  ): Promise<ITransactionEventPaginate> {
     return this.client.listTransaction(
       statuses,
       fromTimestamp || 0,

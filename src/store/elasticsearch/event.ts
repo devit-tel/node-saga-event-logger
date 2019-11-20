@@ -1,7 +1,7 @@
 import { Event, State } from '@melonade/melonade-declaration';
 import * as R from 'ramda';
 import { IAllEventWithId } from '../../kafka';
-import { IEventDataStore } from '../../store';
+import { IEventDataStore, ITransactionEventPaginate } from '../../store';
 import { ElasticsearchStore } from '../elasticsearch';
 
 const mapEsReponseToEvent = R.compose(
@@ -198,7 +198,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
     transactionId?: string,
     from: number = 0,
     size: number = 100,
-  ): Promise<Event.ITransactionEvent[]> => {
+  ): Promise<ITransactionEventPaginate> => {
     const query = {
       query: {
         bool: {
@@ -249,7 +249,10 @@ export class EventElasticsearchStore extends ElasticsearchStore
       body: query,
     });
 
-    return mapEsReponseToEvent(response) as Event.ITransactionEvent[];
+    return {
+      total: response.hits.total,
+      events: mapEsReponseToEvent(response) as Event.ITransactionEvent[],
+    };
   };
 
   getTransactionData = async (
