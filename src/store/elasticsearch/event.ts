@@ -230,6 +230,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
               },
             },
           })),
+          minimum_should_match: 1,
         },
       },
       from,
