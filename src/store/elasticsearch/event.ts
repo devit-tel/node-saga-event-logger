@@ -1,7 +1,7 @@
 import { Event, State } from '@melonade/melonade-declaration';
 import * as R from 'ramda';
 import { IAllEventWithId } from '../../kafka';
-import { IEventDataStore, IQuery } from '../../store';
+import { IEventDataStore } from '../../store';
 import { ElasticsearchStore } from '../elasticsearch';
 
 const mapEsReponseToEvent = R.compose(
@@ -195,6 +195,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
     statuses: State.TransactionStates[],
     fromTimestamp: number,
     toTimestamp: number,
+    transactionId?: string,
     from: number = 0,
     size: number = 100,
   ): Promise<Event.ITransactionEvent[]> => {
@@ -204,6 +205,14 @@ export class EventElasticsearchStore extends ElasticsearchStore
           must: [
             { match: { type: 'TRANSACTION' } },
             { match: { isError: false } },
+            transactionId
+              ? {
+                  query_string: {
+                    default_field: 'transactionId',
+                    query: `*${transactionId}*`,
+                  },
+                }
+              : undefined,
             {
               range: {
                 timestamp: {
@@ -212,7 +221,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
                 },
               },
             },
-          ],
+          ].filter((query: any) => !!query),
           should: statuses.map((status: State.TransactionStates) => ({
             match: {
               'details.status': {
@@ -228,17 +237,11 @@ export class EventElasticsearchStore extends ElasticsearchStore
       sort: [
         {
           timestamp: {
-            order: 'asc',
+            order: 'desc',
           },
         },
       ],
-      aggs: {
-        uniq_transactionId: {
-          terms: { field: 'transactionId' },
-        },
-      },
     };
-    console.log(JSON.stringify(query));
 
     const response = await this.client.search({
       index: this.index,
@@ -277,15 +280,6 @@ export class EventElasticsearchStore extends ElasticsearchStore
     });
 
     return mapEsReponseToEvent(response) as Event.AllEvent[];
-  };
-
-  query = async (
-    query: IQuery,
-    limit: number,
-    page: number,
-  ): Promise<Event.AllEvent[]> => {
-    console.log(query, limit, page);
-    return [];
   };
 
   create = async (event: Event.AllEvent): Promise<Event.AllEvent> => {

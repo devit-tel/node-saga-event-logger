@@ -6,7 +6,14 @@ import { jsonTryParse, toNumber } from '../../../../utils/common';
 export const router = new koaRouter();
 
 router.get('/', async (ctx: koaRouter.IRouterContext) => {
-  const { statuses, fromTimestamp, toTimestamp, from, size } = ctx.query;
+  const {
+    statuses,
+    fromTimestamp,
+    toTimestamp,
+    from,
+    size,
+    transactionId,
+  } = ctx.query;
   return eventStore.listTransaction(
     jsonTryParse(statuses, [
       State.TransactionStates.Cancelled,
@@ -18,6 +25,7 @@ router.get('/', async (ctx: koaRouter.IRouterContext) => {
     ]),
     toNumber(fromTimestamp, 0),
     toNumber(toTimestamp, Date.now()),
+    transactionId,
     toNumber(from, 0),
     toNumber(size, 100),
   );

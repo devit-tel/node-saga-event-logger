@@ -10,19 +10,13 @@ export interface IStore {
   isHealthy(): boolean;
 }
 
-export interface IQuery {
-  status: State.TransactionStates;
-  workflowName: string;
-  from: number;
-  to: number;
-}
-
 export interface IEventDataStore extends IStore {
   getTransactionData(transactionId: string): Promise<Event.AllEvent[]>;
   listTransaction(
     statuses: State.TransactionStates[],
     fromTimestamp: number,
     toTimestamp: number,
+    transactionId?: string,
     from?: number,
     size?: number,
   ): Promise<Event.ITransactionEvent[]>;
@@ -53,6 +47,7 @@ export class EventStore {
     ],
     fromTimestamp: number,
     toTimestamp: number,
+    transactionId?: string,
     from?: number,
     size?: number,
   ): Promise<Event.ITransactionEvent[]> {
@@ -60,6 +55,7 @@ export class EventStore {
       statuses,
       fromTimestamp || 0,
       toTimestamp || Date.now(),
+      transactionId,
       from,
       size,
     );
