@@ -271,11 +271,11 @@ export class EventElasticsearchStore extends ElasticsearchStore
           },
         },
         from: 0,
-        size: 500,
+        size: 1000,
         sort: [
           {
             timestamp: {
-              order: 'asc',
+              order: 'desc',
             },
           },
         ],
