@@ -1,8 +1,8 @@
-import { KafkaConsumer } from '@nv4re/node-rdkafka';
 import { Kafka } from '@melonade/melonade-declaration';
+import { AllEvent } from '@melonade/melonade-declaration/build/event';
+import { KafkaConsumer } from 'node-rdkafka';
 import * as config from '../config';
 import { jsonTryParse } from '../utils/common';
-import { AllEvent } from '@melonade/melonade-declaration/build/event';
 
 export interface IAllEventWithId {
   _id: string;

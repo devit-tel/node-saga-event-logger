@@ -26,8 +26,6 @@ export const server = {
 export const kafkaTopicName = {
   // Publish to specified task
   task: `${Kafka.topicPrefix}.${melonade.namespace}.${Kafka.topicSuffix.task}`,
-  // Publish to system task
-  systemTask: `${Kafka.topicPrefix}.${melonade.namespace}.${Kafka.topicSuffix.systemTask}`,
   // Publish to store event
   store: `${Kafka.topicPrefix}.${melonade.namespace}.${Kafka.topicSuffix.store}`,
   // Subscriptions to update event
