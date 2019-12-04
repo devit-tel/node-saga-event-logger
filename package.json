@@ -33,7 +33,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@koa/cors": "^3.0.0",
-    "@melonade/melonade-declaration": "^0.8.3",
+    "@melonade/melonade-declaration": "^0.8.5",
     "@types/elasticsearch": "^5.0.35",
     "@types/koa": "^2.0.49",
     "@types/koa-router": "^7.0.42",
