@@ -39,7 +39,7 @@
     "@types/koa-router": "^7.0.42",
     "@types/ramda": "^0.26.16",
     "dotenv": "^8.0.0",
-    "elasticsearch": "^16.4.0",
+    "elasticsearch": "^16.5.0",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
     "koa-compress": "^3.0.0",

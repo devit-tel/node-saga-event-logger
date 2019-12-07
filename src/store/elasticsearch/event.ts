@@ -10,7 +10,7 @@ const mapEsReponseToEvent = R.compose(
 );
 
 const ES_EVENTS_MAPPING = {
-  events: {
+  event: {
     properties: {
       details: {
         properties: {
@@ -246,7 +246,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
 
     const response = await this.client.search({
       index: this.index,
-      type: 'events',
+      type: 'event',
       body: query,
     });
 
@@ -261,7 +261,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
   ): Promise<Event.AllEvent[]> => {
     const response = await this.client.search({
       index: this.index,
-      type: 'events',
+      type: 'event',
       body: {
         query: {
           bool: {
@@ -289,7 +289,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
   create = async (event: Event.AllEvent): Promise<Event.AllEvent> => {
     await this.client.index({
       index: this.index,
-      type: 'events',
+      type: 'event',
       body: event,
     });
 
@@ -303,7 +303,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
         result.push({
           index: {
             _index: this.index,
-            _type: 'events',
+            _type: 'event',
             _id,
           },
         });
