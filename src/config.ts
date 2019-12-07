@@ -34,6 +34,11 @@ export const kafkaTopicName = {
   command: `${Kafka.topicPrefix}.${melonade.namespace}.${Kafka.topicSuffix.command}`,
 };
 
+export const kafkaAdminConfig = {
+  ...pickAndReplaceFromENV('^kafka\\.conf\\.'),
+  ...pickAndReplaceFromENV('^admin\\.kafka\\.conf\\.'),
+};
+
 export const kafkaEventConfig = {
   config: {
     'enable.auto.commit': 'false',
