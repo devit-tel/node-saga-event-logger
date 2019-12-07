@@ -21,7 +21,11 @@ consumerEventClient.connect();
 consumerEventClient.on('ready', async () => {
   console.log('Consumer Event kafka are ready');
   try {
-    await createTopic(config.kafkaTopicName.event, 20, 1);
+    await createTopic(
+      config.kafkaTopicName.store,
+      config.kafkaTopic.num_partitions,
+      config.kafkaTopic.replication_factor,
+    );
   } catch (error) {
     console.warn(
       `Create topic "${
@@ -35,8 +39,8 @@ consumerEventClient.on('ready', async () => {
 
 export const createTopic = (
   tipicName: string,
-  numPartitions: number = 10,
-  replicationFactor: number = 1,
+  numPartitions: number,
+  replicationFactor: number,
   config?: any,
 ): Promise<any> =>
   new Promise((resolve: Function, reject: Function) => {
