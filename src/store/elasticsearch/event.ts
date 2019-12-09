@@ -1,4 +1,4 @@
-import { Event } from '@melonade/melonade-declaration';
+import { Event, State } from '@melonade/melonade-declaration';
 import * as R from 'ramda';
 import { IAllEventWithId } from '../../kafka';
 import { IEventDataStore, ITransactionEventPaginate } from '../../store';
@@ -211,6 +211,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
           must: [
             { match: { type: 'TRANSACTION' } },
             { match: { isError: false } },
+            { match: { 'details.status': State.TransactionStates.Running } },
             transactionId
               ? {
                   query_string: {
@@ -227,11 +228,9 @@ export class EventElasticsearchStore extends ElasticsearchStore
                 },
               },
             },
-            tags.map((tag: string) => ({
+            ...tags.map((tag: string) => ({
               match: {
-                'details.tags': {
-                  query: tag,
-                },
+                'details.tags': tag,
               },
             })),
           ].filter((query: any) => !!query),
@@ -248,6 +247,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
       ],
     };
 
+    console.log(JSON.stringify(query));
     const response = await this.client.search({
       index: this.index,
       type: 'event',
