@@ -1,4 +1,4 @@
-import { Event, State } from '@melonade/melonade-declaration';
+import { Event } from '@melonade/melonade-declaration';
 import * as R from 'ramda';
 import { IAllEventWithId } from '../../kafka';
 import { IEventDataStore, ITransactionEventPaginate } from '../../store';
@@ -30,6 +30,9 @@ const ES_EVENTS_MAPPING = {
           isRetried: {
             type: 'boolean',
           },
+          logs: {
+            type: 'text',
+          },
           output: {
             type: 'object',
             enabled: false,
@@ -48,6 +51,9 @@ const ES_EVENTS_MAPPING = {
             type: 'date',
           },
           status: {
+            type: 'keyword',
+          },
+          tags: {
             type: 'keyword',
           },
           taskId: {
@@ -192,10 +198,10 @@ export class EventElasticsearchStore extends ElasticsearchStore
   }
 
   listTransaction = async (
-    statuses: State.TransactionStates[],
     fromTimestamp: number,
     toTimestamp: number,
     transactionId?: string,
+    tags: string[] = [],
     from: number = 0,
     size: number = 100,
   ): Promise<ITransactionEventPaginate> => {
@@ -221,15 +227,14 @@ export class EventElasticsearchStore extends ElasticsearchStore
                 },
               },
             },
-          ].filter((query: any) => !!query),
-          should: statuses.map((status: State.TransactionStates) => ({
-            match: {
-              'details.status': {
-                query: status,
+            tags.map((tag: string) => ({
+              match: {
+                'details.tags': {
+                  query: tag,
+                },
               },
-            },
-          })),
-          minimum_should_match: 1,
+            })),
+          ].filter((query: any) => !!query),
         },
       },
       from,

@@ -1,4 +1,4 @@
-import { Event, State } from '@melonade/melonade-declaration';
+import { Event } from '@melonade/melonade-declaration';
 import { IAllEventWithId } from '../kafka';
 
 export enum StoreType {
@@ -18,10 +18,10 @@ export interface ITransactionEventPaginate {
 export interface IEventDataStore extends IStore {
   getTransactionData(transactionId: string): Promise<Event.AllEvent[]>;
   listTransaction(
-    statuses: State.TransactionStates[],
     fromTimestamp: number,
     toTimestamp: number,
     transactionId?: string,
+    tags?: string[],
     from?: number,
     size?: number,
   ): Promise<ITransactionEventPaginate>;
@@ -42,25 +42,18 @@ export class EventStore {
   }
 
   listTransaction(
-    statuses: State.TransactionStates[] = [
-      State.TransactionStates.Cancelled,
-      State.TransactionStates.Compensated,
-      State.TransactionStates.Completed,
-      State.TransactionStates.Failed,
-      State.TransactionStates.Paused,
-      State.TransactionStates.Running,
-    ],
     fromTimestamp: number,
     toTimestamp: number,
     transactionId?: string,
+    tags: string[] = [],
     from?: number,
     size?: number,
   ): Promise<ITransactionEventPaginate> {
     return this.client.listTransaction(
-      statuses,
       fromTimestamp || 0,
       toTimestamp || Date.now(),
       transactionId,
+      tags,
       from,
       size,
     );

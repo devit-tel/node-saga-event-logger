@@ -1,5 +1,4 @@
 import koaRouter = require('koa-router');
-import { State } from '@melonade/melonade-declaration';
 import { eventStore } from '../../../../store';
 import { jsonTryParse, toNumber } from '../../../../utils/common';
 
@@ -7,7 +6,7 @@ export const router = new koaRouter();
 
 router.get('/', async (ctx: koaRouter.IRouterContext) => {
   const {
-    statuses,
+    tags,
     fromTimestamp,
     toTimestamp,
     from,
@@ -15,17 +14,10 @@ router.get('/', async (ctx: koaRouter.IRouterContext) => {
     transactionId,
   } = ctx.query;
   return eventStore.listTransaction(
-    jsonTryParse(statuses, [
-      State.TransactionStates.Cancelled,
-      State.TransactionStates.Compensated,
-      State.TransactionStates.Completed,
-      State.TransactionStates.Failed,
-      State.TransactionStates.Paused,
-      State.TransactionStates.Running,
-    ]),
     toNumber(fromTimestamp, 0),
     toNumber(toTimestamp, Date.now()),
     transactionId,
+    jsonTryParse(tags, []),
     toNumber(from, 0),
     toNumber(size, 100),
   );
