@@ -226,7 +226,6 @@ export class EventElasticsearchStore extends ElasticsearchStore
             match: {
               'details.status': {
                 query: status,
-                analyzer: 'keyword',
               },
             },
           })),
@@ -244,6 +243,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
       ],
     };
 
+    console.log(JSON.stringify(query));
     const response = await this.client.search({
       index: this.index,
       type: 'event',
