@@ -247,7 +247,6 @@ export class EventElasticsearchStore extends ElasticsearchStore
       ],
     };
 
-    console.log(JSON.stringify(query));
     const response = await this.client.search({
       index: this.index,
       type: 'event',
@@ -270,8 +269,6 @@ export class EventElasticsearchStore extends ElasticsearchStore
         query: {
           bool: {
             must: [{ match: { transactionId } }],
-            must_not: [],
-            should: [],
           },
         },
         from: 0,
