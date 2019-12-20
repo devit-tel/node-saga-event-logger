@@ -1,10 +1,17 @@
-import { Event, State } from '@melonade/melonade-declaration';
+import { Event, State, Task } from '@melonade/melonade-declaration';
+import * as bodybuilder from 'bodybuilder';
 import * as R from 'ramda';
 import { IAllEventWithId } from '../../kafka';
-import { IEventDataStore, ITransactionEventPaginate } from '../../store';
+import {
+  HistogramCount,
+  IEventDataStore,
+  ITransactionEventPaginate,
+  TaskExecutionTime,
+} from '../../store';
 import { ElasticsearchStore } from '../elasticsearch';
+import moment = require('moment');
 
-const mapEsReponseToEvent = R.compose(
+const mapEsResponseToEvent = R.compose(
   R.map(R.prop('_source')),
   R.pathOr([], ['hits', 'hits']),
 );
@@ -197,6 +204,75 @@ export class EventElasticsearchStore extends ElasticsearchStore
       .catch((error: any) => console.log(error.message));
   }
 
+  getWeeklyTaskExecuteTime = async (
+    now?: number | Date,
+  ): Promise<TaskExecutionTime[]> => {
+    const response = await this.client.search({
+      index: this.index,
+      type: 'event',
+      size: 3000,
+      body: bodybuilder()
+        .query('match', 'type', 'TASK')
+        .query('match', 'isError', false)
+        .query('match', 'details.status', State.TaskStates.Completed)
+        .query('match', 'details.type', Task.TaskTypes.Task)
+        .query('range', 'timestamp', {
+          gte: moment(now).startOf('week'),
+          lte: moment(now).endOf('week'),
+        })
+        .rawOption('script_fields', {
+          executionTime: {
+            script:
+              "doc['details.endTime'].date.millis - doc['details.startTime'].date.millis",
+          },
+          taskName: {
+            script: "doc['details.taskName']",
+          },
+        })
+
+        .build(),
+    });
+    return response.hits.hits.map(data => {
+      return {
+        taskName: R.pathOr('', ['fields', 'taskName', 0], data),
+        executionTime: R.pathOr(0, ['fields', 'executionTime', 0], data),
+      };
+    });
+  };
+
+  getWeeklyTransactionsByStatus = async (
+    status: State.TransactionStates = State.TransactionStates.Running,
+    now?: number | Date,
+  ): Promise<HistogramCount[]> => {
+    const response = await this.client.search({
+      index: this.index,
+      type: 'event',
+      size: 0,
+      body: bodybuilder()
+        .query('match', 'type', 'TRANSACTION')
+        .query('match', 'isError', false)
+        .query('match', 'details.status', status)
+        .query('range', 'timestamp', {
+          gte: moment(now).startOf('week'),
+          lte: moment(now).endOf('week'),
+        })
+        .aggregation(
+          'date_histogram',
+          {
+            field: 'timestamp',
+            interval: 'hour',
+          },
+          'timestamp_hour',
+        )
+        .build(),
+    });
+
+    return response.aggregations['timestamp_hour'].buckets.map((data: any) => ({
+      date: data.key,
+      count: data.doc_count,
+    }));
+  };
+
   listTransaction = async (
     fromTimestamp: number,
     toTimestamp: number,
@@ -255,7 +331,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
 
     return {
       total: response.hits.total,
-      events: mapEsReponseToEvent(response) as Event.ITransactionEvent[],
+      events: mapEsResponseToEvent(response) as Event.ITransactionEvent[],
     };
   };
 
@@ -284,7 +360,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
       },
     });
 
-    return mapEsReponseToEvent(response) as Event.AllEvent[];
+    return mapEsResponseToEvent(response) as Event.AllEvent[];
   };
 
   create = async (event: Event.AllEvent): Promise<Event.AllEvent> => {

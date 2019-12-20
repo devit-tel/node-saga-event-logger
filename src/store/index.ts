@@ -1,9 +1,19 @@
-import { Event } from '@melonade/melonade-declaration';
+import { Event, State } from '@melonade/melonade-declaration';
 import { IAllEventWithId } from '../kafka';
 
 export enum StoreType {
   MongoDB = 'MONGODB',
   Elasticsearch = 'ELASTICSEARCH',
+}
+
+export interface HistogramCount {
+  date: number | Date;
+  count: number;
+}
+
+export interface TaskExecutionTime {
+  executionTime: number;
+  taskName: string;
 }
 
 export interface IStore {
@@ -16,6 +26,11 @@ export interface ITransactionEventPaginate {
 }
 
 export interface IEventDataStore extends IStore {
+  getWeeklyTaskExecuteTime(now?: number | Date): Promise<TaskExecutionTime[]>;
+  getWeeklyTransactionsByStatus(
+    status: State.TransactionStates,
+    now?: number | Date,
+  ): Promise<HistogramCount[]>;
   getTransactionData(transactionId: string): Promise<Event.AllEvent[]>;
   listTransaction(
     fromTimestamp: number,
@@ -35,6 +50,17 @@ export class EventStore {
   setClient(client: IEventDataStore) {
     if (this.client) throw new Error('Already set client');
     this.client = client;
+  }
+
+  getWeeklyTaskExecuteTime(now?: number | Date): Promise<TaskExecutionTime[]> {
+    return this.client.getWeeklyTaskExecuteTime(now);
+  }
+
+  getWeeklyTransactionsByStatus(
+    status?: State.TransactionStates,
+    now?: number | Date,
+  ): Promise<HistogramCount[]> {
+    return this.client.getWeeklyTransactionsByStatus(status, now);
   }
 
   getTransactionData(transactionId: string): Promise<Event.AllEvent[]> {
