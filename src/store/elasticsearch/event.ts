@@ -1,8 +1,14 @@
 import { Event, State } from '@melonade/melonade-declaration';
+import * as bodybuilder from 'bodybuilder';
 import * as R from 'ramda';
 import { IAllEventWithId } from '../../kafka';
-import { IEventDataStore, ITransactionEventPaginate } from '../../store';
+import {
+  HistogramCount,
+  IEventDataStore,
+  ITransactionEventPaginate,
+} from '../../store';
 import { ElasticsearchStore } from '../elasticsearch';
+import moment = require('moment');
 
 const mapEsReponseToEvent = R.compose(
   R.map(R.prop('_source')),
@@ -196,6 +202,39 @@ export class EventElasticsearchStore extends ElasticsearchStore
       })
       .catch((error: any) => console.log(error.message));
   }
+
+  getWeeklyTransactionsByStatus = async (
+    status: State.TransactionStates = State.TransactionStates.Running,
+    now?: number | Date,
+  ): Promise<HistogramCount[]> => {
+    const response = await this.client.search({
+      index: this.index,
+      type: 'event',
+      size: 0,
+      body: bodybuilder()
+        .query('match', 'type', 'TRANSACTION')
+        .query('match', 'isError', false)
+        .query('match', 'details.status', status)
+        .query('range', 'timestamp', {
+          gte: moment(now).startOf('week'),
+          lte: moment(now).endOf('week'),
+        })
+        .aggregation(
+          'date_histogram',
+          {
+            field: 'timestamp',
+            interval: 'hour',
+          },
+          'timestamp_hour',
+        )
+        .build(),
+    });
+
+    return response.aggregations['timestamp_hour'].buckets.map((data: any) => ({
+      date: data.key,
+      count: data.doc_count,
+    }));
+  };
 
   listTransaction = async (
     fromTimestamp: number,
