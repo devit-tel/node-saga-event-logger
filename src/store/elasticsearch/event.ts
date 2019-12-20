@@ -6,6 +6,7 @@ import {
   HistogramCount,
   IEventDataStore,
   ITransactionEventPaginate,
+  TaskExecutionTime,
 } from '../../store';
 import { ElasticsearchStore } from '../elasticsearch';
 import moment = require('moment');
@@ -202,6 +203,42 @@ export class EventElasticsearchStore extends ElasticsearchStore
       })
       .catch((error: any) => console.log(error.message));
   }
+
+  getWeeklyTaskExecuteTime = async (
+    now?: number | Date,
+  ): Promise<TaskExecutionTime[]> => {
+    const response = await this.client.search({
+      index: this.index,
+      type: 'event',
+      size: 3000,
+      body: bodybuilder()
+        .query('match', 'type', 'TASK')
+        .query('match', 'isError', false)
+        .query('match', 'details.status', State.TaskStates.Completed)
+        .query('range', 'timestamp', {
+          gte: moment(now).startOf('week'),
+          lte: moment(now).endOf('week'),
+        })
+        .rawOption('script_fields', {
+          executionTime: {
+            script:
+              "doc['details.endTime'].date.millis - doc['details.startTime'].date.millis",
+          },
+          taskName: {
+            script: "doc['details.taskName']",
+          },
+        })
+
+        .build(),
+    });
+
+    return response.hits.hits.map(data => {
+      return {
+        taskName: R.pathOr('', ['_fields', 'taskName', 0], data),
+        executionTime: R.pathOr(0, ['_fields', 'executionTime', 0], data),
+      };
+    });
+  };
 
   getWeeklyTransactionsByStatus = async (
     status: State.TransactionStates = State.TransactionStates.Running,

@@ -11,6 +11,11 @@ export interface HistogramCount {
   count: number;
 }
 
+export interface TaskExecutionTime {
+  executionTime: number;
+  taskName: string;
+}
+
 export interface IStore {
   isHealthy(): boolean;
 }
@@ -21,6 +26,7 @@ export interface ITransactionEventPaginate {
 }
 
 export interface IEventDataStore extends IStore {
+  getWeeklyTaskExecuteTime(now?: number | Date): Promise<TaskExecutionTime[]>;
   getWeeklyTransactionsByStatus(
     status: State.TransactionStates,
     now?: number | Date,
@@ -44,6 +50,10 @@ export class EventStore {
   setClient(client: IEventDataStore) {
     if (this.client) throw new Error('Already set client');
     this.client = client;
+  }
+
+  getWeeklyTaskExecuteTime(now?: number | Date): Promise<TaskExecutionTime[]> {
+    return this.client.getWeeklyTaskExecuteTime(now);
   }
 
   getWeeklyTransactionsByStatus(
