@@ -1,4 +1,4 @@
-import { Event, State } from '@melonade/melonade-declaration';
+import { Event, State, Task } from '@melonade/melonade-declaration';
 import * as bodybuilder from 'bodybuilder';
 import * as R from 'ramda';
 import { IAllEventWithId } from '../../kafka';
@@ -11,7 +11,7 @@ import {
 import { ElasticsearchStore } from '../elasticsearch';
 import moment = require('moment');
 
-const mapEsReponseToEvent = R.compose(
+const mapEsResponseToEvent = R.compose(
   R.map(R.prop('_source')),
   R.pathOr([], ['hits', 'hits']),
 );
@@ -215,6 +215,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
         .query('match', 'type', 'TASK')
         .query('match', 'isError', false)
         .query('match', 'details.status', State.TaskStates.Completed)
+        .query('match', 'details.type', Task.TaskTypes.Task)
         .query('range', 'timestamp', {
           gte: moment(now).startOf('week'),
           lte: moment(now).endOf('week'),
@@ -231,11 +232,10 @@ export class EventElasticsearchStore extends ElasticsearchStore
 
         .build(),
     });
-
     return response.hits.hits.map(data => {
       return {
-        taskName: R.pathOr('', ['_fields', 'taskName', 0], data),
-        executionTime: R.pathOr(0, ['_fields', 'executionTime', 0], data),
+        taskName: R.pathOr('', ['fields', 'taskName', 0], data),
+        executionTime: R.pathOr(0, ['fields', 'executionTime', 0], data),
       };
     });
   };
@@ -331,7 +331,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
 
     return {
       total: response.hits.total,
-      events: mapEsReponseToEvent(response) as Event.ITransactionEvent[],
+      events: mapEsResponseToEvent(response) as Event.ITransactionEvent[],
     };
   };
 
@@ -360,7 +360,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
       },
     });
 
-    return mapEsReponseToEvent(response) as Event.AllEvent[];
+    return mapEsResponseToEvent(response) as Event.AllEvent[];
   };
 
   create = async (event: Event.AllEvent): Promise<Event.AllEvent> => {
