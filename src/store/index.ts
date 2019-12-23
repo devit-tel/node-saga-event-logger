@@ -26,19 +26,28 @@ export interface ITransactionEventPaginate {
 }
 
 export interface IEventDataStore extends IStore {
-  getWeeklyTaskExecuteTime(now?: number | Date): Promise<TaskExecutionTime[]>;
-  getWeeklyTransactionsByStatus(
+  getFalseEvents(
+    fromTimestamp: number,
+    toTimestamp: number,
+  ): Promise<Event.AllEvent[]>;
+  getTaskExecuteime(
+    fromTimestamp: number,
+    toTimestamp: number,
+  ): Promise<TaskExecutionTime[]>;
+  getTransactionDateHistogram(
+    fromTimestamp: number,
+    toTimestamp: number,
     status: State.TransactionStates,
-    now?: number | Date,
   ): Promise<HistogramCount[]>;
   getTransactionData(transactionId: string): Promise<Event.AllEvent[]>;
-  listTransaction(
+  getTraansactionEvents(
     fromTimestamp: number,
     toTimestamp: number,
     transactionId?: string,
     tags?: string[],
     from?: number,
     size?: number,
+    statuses?: State.TransactionStates[],
   ): Promise<ITransactionEventPaginate>;
   create(event: Event.AllEvent): Promise<Event.AllEvent>;
   bulkCreate(events: IAllEventWithId[]): Promise<any[]>;
@@ -51,19 +60,33 @@ export class EventStore {
     if (this.client) throw new Error('Already set client');
     this.client = client;
   }
+  getFalseEvents = (
+    fromTimestamp: number,
+    toTimestamp: number,
+  ): Promise<Event.AllEvent[]> => {
+    return this.client.getFalseEvents(fromTimestamp, toTimestamp);
+  };
 
-  getWeeklyTaskExecuteTime(now?: number | Date): Promise<TaskExecutionTime[]> {
-    return this.client.getWeeklyTaskExecuteTime(now);
+  getTaskExecuteime(
+    fromTimestamp: number,
+    toTimestamp: number,
+  ): Promise<TaskExecutionTime[]> {
+    return this.client.getTaskExecuteime(fromTimestamp, toTimestamp);
   }
 
-  getWeeklyTransactionsByStatus(
+  getTransactionDateHistogram(
+    fromTimestamp: number,
+    toTimestamp: number,
     status?: State.TransactionStates,
-    now?: number | Date,
   ): Promise<HistogramCount[]> {
-    return this.client.getWeeklyTransactionsByStatus(status, now);
+    return this.client.getTransactionDateHistogram(
+      fromTimestamp,
+      toTimestamp,
+      status,
+    );
   }
 
-  getTransactionData(transactionId: string): Promise<Event.AllEvent[]> {
+  getTransactionEvents(transactionId: string): Promise<Event.AllEvent[]> {
     return this.client.getTransactionData(transactionId);
   }
 
@@ -74,14 +97,16 @@ export class EventStore {
     tags: string[] = [],
     from?: number,
     size?: number,
+    statuses?: State.TransactionStates[],
   ): Promise<ITransactionEventPaginate> {
-    return this.client.listTransaction(
+    return this.client.getTraansactionEvents(
       fromTimestamp || 0,
       toTimestamp || Date.now(),
       transactionId,
       tags,
       from,
       size,
+      statuses,
     );
   }
 

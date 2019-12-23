@@ -9,7 +9,6 @@ import {
   TaskExecutionTime,
 } from '../../store';
 import { ElasticsearchStore } from '../elasticsearch';
-import moment = require('moment');
 
 const mapEsResponseToEvent = R.compose(
   R.map(R.prop('_source')),
@@ -204,8 +203,31 @@ export class EventElasticsearchStore extends ElasticsearchStore
       .catch((error: any) => console.log(error.message));
   }
 
-  getWeeklyTaskExecuteTime = async (
-    now?: number | Date,
+  getFalseEvents = async (
+    fromTimestamp: number,
+    toTimestamp: number,
+  ): Promise<Event.AllEvent[]> => {
+    const response = await this.client.search({
+      index: this.index,
+      type: 'event',
+      body: bodybuilder()
+        .query('match', 'isError', true)
+        .sort('timestamp', 'desc')
+        .query('range', 'timestamp', {
+          gte: fromTimestamp,
+          lte: toTimestamp,
+        })
+        .from(0)
+        .size(3000)
+        .build(),
+    });
+
+    return mapEsResponseToEvent(response) as Event.AllEvent[];
+  };
+
+  getTaskExecuteime = async (
+    fromTimestamp: number,
+    toTimestamp: number,
   ): Promise<TaskExecutionTime[]> => {
     const response = await this.client.search({
       index: this.index,
@@ -217,8 +239,8 @@ export class EventElasticsearchStore extends ElasticsearchStore
         .query('match', 'details.status', State.TaskStates.Completed)
         .query('match', 'details.type', Task.TaskTypes.Task)
         .query('range', 'timestamp', {
-          gte: moment(now).startOf('week'),
-          lte: moment(now).endOf('week'),
+          gte: fromTimestamp,
+          lte: toTimestamp,
         })
         .rawOption('script_fields', {
           executionTime: {
@@ -229,7 +251,6 @@ export class EventElasticsearchStore extends ElasticsearchStore
             script: "doc['details.taskName']",
           },
         })
-
         .build(),
     });
     return response.hits.hits.map(data => {
@@ -240,9 +261,10 @@ export class EventElasticsearchStore extends ElasticsearchStore
     });
   };
 
-  getWeeklyTransactionsByStatus = async (
+  getTransactionDateHistogram = async (
+    fromTimestamp: number,
+    toTimestamp: number,
     status: State.TransactionStates = State.TransactionStates.Running,
-    now?: number | Date,
   ): Promise<HistogramCount[]> => {
     const response = await this.client.search({
       index: this.index,
@@ -253,8 +275,8 @@ export class EventElasticsearchStore extends ElasticsearchStore
         .query('match', 'isError', false)
         .query('match', 'details.status', status)
         .query('range', 'timestamp', {
-          gte: moment(now).startOf('week'),
-          lte: moment(now).endOf('week'),
+          gte: fromTimestamp,
+          lte: toTimestamp,
         })
         .aggregation(
           'date_histogram',
@@ -273,60 +295,49 @@ export class EventElasticsearchStore extends ElasticsearchStore
     }));
   };
 
-  listTransaction = async (
+  getTraansactionEvents = async (
     fromTimestamp: number,
     toTimestamp: number,
     transactionId?: string,
     tags: string[] = [],
     from: number = 0,
     size: number = 100,
+    statuses: State.TransactionStates[] = [State.TransactionStates.Running],
   ): Promise<ITransactionEventPaginate> => {
-    const query = {
-      query: {
-        bool: {
-          must: [
-            { match: { type: 'TRANSACTION' } },
-            { match: { isError: false } },
-            { match: { 'details.status': State.TransactionStates.Running } },
-            transactionId
-              ? {
-                  query_string: {
-                    default_field: 'transactionId',
-                    query: `*${transactionId}*`,
-                  },
-                }
-              : undefined,
-            {
-              range: {
-                timestamp: {
-                  gte: fromTimestamp,
-                  lte: toTimestamp,
-                },
-              },
-            },
-            ...tags.map((tag: string) => ({
-              match: {
-                'details.tags': tag,
-              },
-            })),
-          ].filter((query: any) => !!query),
-        },
-      },
-      from,
-      size,
-      sort: [
-        {
-          timestamp: {
-            order: 'desc',
-          },
-        },
-      ],
-    };
+    const body = bodybuilder()
+      .query('match', 'type', 'TRANSACTION')
+      .query('match', 'isError', false)
+      .query('match', 'type', 'TRANSACTION')
+      .query('range', 'timestamp', {
+        gte: fromTimestamp,
+        lte: toTimestamp,
+      })
+      .sort('timestamp', 'desc')
+      .from(from)
+      .size(size);
+
+    for (const tag of tags) {
+      body.query('match', 'details.tags', tag);
+    }
+
+    body.query('bool', (builder: bodybuilder.QuerySubFilterBuilder) => {
+      statuses.map((status: State.TransactionStates) =>
+        builder.orQuery('match', 'details.status', status),
+      );
+      return builder;
+    });
+
+    if (transactionId) {
+      body.query('query_string', {
+        default_field: 'transactionId',
+        query: `*${transactionId}*`,
+      });
+    }
 
     const response = await this.client.search({
       index: this.index,
       type: 'event',
-      body: query,
+      body: body.build(),
     });
 
     return {
@@ -341,23 +352,12 @@ export class EventElasticsearchStore extends ElasticsearchStore
     const response = await this.client.search({
       index: this.index,
       type: 'event',
-      body: {
-        query: {
-          bool: {
-            must: [{ match: { transactionId } }],
-          },
-        },
-        from: 0,
-        size: 1000,
-        sort: [
-          {
-            timestamp: {
-              order: 'desc',
-            },
-          },
-        ],
-        aggs: {},
-      },
+      body: bodybuilder()
+        .query('match', 'transactionId', transactionId)
+        .sort('timestamp', 'desc')
+        .from(0)
+        .size(3000)
+        .build(),
     });
 
     return mapEsResponseToEvent(response) as Event.AllEvent[];
