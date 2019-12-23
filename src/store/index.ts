@@ -30,17 +30,17 @@ export interface IEventDataStore extends IStore {
     fromTimestamp: number,
     toTimestamp: number,
   ): Promise<Event.AllEvent[]>;
-  getWeeklyTaskExecuteTime(
+  getTaskExecuteime(
     fromTimestamp: number,
     toTimestamp: number,
   ): Promise<TaskExecutionTime[]>;
-  getWeeklyTransactionsByStatus(
+  getTransactionDateHistogram(
     fromTimestamp: number,
     toTimestamp: number,
     status: State.TransactionStates,
   ): Promise<HistogramCount[]>;
   getTransactionData(transactionId: string): Promise<Event.AllEvent[]>;
-  listTransaction(
+  getTraansactionEvents(
     fromTimestamp: number,
     toTimestamp: number,
     transactionId?: string,
@@ -67,26 +67,26 @@ export class EventStore {
     return this.client.getFalseEvents(fromTimestamp, toTimestamp);
   };
 
-  getWeeklyTaskExecuteTime(
+  getTaskExecuteime(
     fromTimestamp: number,
     toTimestamp: number,
   ): Promise<TaskExecutionTime[]> {
-    return this.client.getWeeklyTaskExecuteTime(fromTimestamp, toTimestamp);
+    return this.client.getTaskExecuteime(fromTimestamp, toTimestamp);
   }
 
-  getWeeklyTransactionsByStatus(
+  getTransactionDateHistogram(
     fromTimestamp: number,
     toTimestamp: number,
     status?: State.TransactionStates,
   ): Promise<HistogramCount[]> {
-    return this.client.getWeeklyTransactionsByStatus(
+    return this.client.getTransactionDateHistogram(
       fromTimestamp,
       toTimestamp,
       status,
     );
   }
 
-  getTransactionData(transactionId: string): Promise<Event.AllEvent[]> {
+  getTransactionEvents(transactionId: string): Promise<Event.AllEvent[]> {
     return this.client.getTransactionData(transactionId);
   }
 
@@ -99,7 +99,7 @@ export class EventStore {
     size?: number,
     statuses?: State.TransactionStates[],
   ): Promise<ITransactionEventPaginate> {
-    return this.client.listTransaction(
+    return this.client.getTraansactionEvents(
       fromTimestamp || 0,
       toTimestamp || Date.now(),
       transactionId,

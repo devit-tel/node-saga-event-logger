@@ -225,7 +225,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
     return mapEsResponseToEvent(response) as Event.AllEvent[];
   };
 
-  getWeeklyTaskExecuteTime = async (
+  getTaskExecuteime = async (
     fromTimestamp: number,
     toTimestamp: number,
   ): Promise<TaskExecutionTime[]> => {
@@ -261,7 +261,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
     });
   };
 
-  getWeeklyTransactionsByStatus = async (
+  getTransactionDateHistogram = async (
     fromTimestamp: number,
     toTimestamp: number,
     status: State.TransactionStates = State.TransactionStates.Running,
@@ -295,7 +295,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
     }));
   };
 
-  listTransaction = async (
+  getTraansactionEvents = async (
     fromTimestamp: number,
     toTimestamp: number,
     transactionId?: string,
