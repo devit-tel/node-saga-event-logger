@@ -4,7 +4,7 @@ import { toNumber } from '../../../../utils/common';
 
 export const router = new koaRouter();
 
-router.get('/transaction/week', async (ctx: koaRouter.IRouterContext) => {
+router.get('/transaction-histogram', async (ctx: koaRouter.IRouterContext) => {
   const { status, fromTimestamp, toTimestamp } = ctx.query;
   return eventStore.getTransactionDateHistogram(
     toNumber(fromTimestamp, 0),
@@ -13,7 +13,7 @@ router.get('/transaction/week', async (ctx: koaRouter.IRouterContext) => {
   );
 });
 
-router.get('/task/execute/week', async (ctx: koaRouter.IRouterContext) => {
+router.get('/task-execution-time', async (ctx: koaRouter.IRouterContext) => {
   const { fromTimestamp, toTimestamp } = ctx.query;
   return eventStore.getTaskExecuteime(
     toNumber(fromTimestamp, 0),
