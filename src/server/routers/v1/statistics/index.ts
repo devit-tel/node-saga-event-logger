@@ -5,13 +5,20 @@ import { toNumber } from '../../../../utils/common';
 export const router = new koaRouter();
 
 router.get('/transaction/week', async (ctx: koaRouter.IRouterContext) => {
-  const { status, now } = ctx.query;
-  return eventStore.getWeeklyTransactionsByStatus(status, now);
+  const { status, fromTimestamp, toTimestamp } = ctx.query;
+  return eventStore.getWeeklyTransactionsByStatus(
+    toNumber(fromTimestamp, 0),
+    toNumber(toTimestamp, Date.now()),
+    status,
+  );
 });
 
 router.get('/task/execute/week', async (ctx: koaRouter.IRouterContext) => {
-  const { now } = ctx.query;
-  return eventStore.getWeeklyTaskExecuteTime(now);
+  const { fromTimestamp, toTimestamp } = ctx.query;
+  return eventStore.getWeeklyTaskExecuteTime(
+    toNumber(fromTimestamp, 0),
+    toNumber(toTimestamp, Date.now()),
+  );
 });
 
 router.get('/false-events', async (ctx: koaRouter.IRouterContext) => {

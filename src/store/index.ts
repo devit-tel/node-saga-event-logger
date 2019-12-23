@@ -30,10 +30,14 @@ export interface IEventDataStore extends IStore {
     fromTimestamp: number,
     toTimestamp: number,
   ): Promise<Event.AllEvent[]>;
-  getWeeklyTaskExecuteTime(now?: number | Date): Promise<TaskExecutionTime[]>;
+  getWeeklyTaskExecuteTime(
+    fromTimestamp: number,
+    toTimestamp: number,
+  ): Promise<TaskExecutionTime[]>;
   getWeeklyTransactionsByStatus(
+    fromTimestamp: number,
+    toTimestamp: number,
     status: State.TransactionStates,
-    now?: number | Date,
   ): Promise<HistogramCount[]>;
   getTransactionData(transactionId: string): Promise<Event.AllEvent[]>;
   listTransaction(
@@ -63,15 +67,23 @@ export class EventStore {
     return this.client.getFalseEvents(fromTimestamp, toTimestamp);
   };
 
-  getWeeklyTaskExecuteTime(now?: number | Date): Promise<TaskExecutionTime[]> {
-    return this.client.getWeeklyTaskExecuteTime(now);
+  getWeeklyTaskExecuteTime(
+    fromTimestamp: number,
+    toTimestamp: number,
+  ): Promise<TaskExecutionTime[]> {
+    return this.client.getWeeklyTaskExecuteTime(fromTimestamp, toTimestamp);
   }
 
   getWeeklyTransactionsByStatus(
+    fromTimestamp: number,
+    toTimestamp: number,
     status?: State.TransactionStates,
-    now?: number | Date,
   ): Promise<HistogramCount[]> {
-    return this.client.getWeeklyTransactionsByStatus(status, now);
+    return this.client.getWeeklyTransactionsByStatus(
+      fromTimestamp,
+      toTimestamp,
+      status,
+    );
   }
 
   getTransactionData(transactionId: string): Promise<Event.AllEvent[]> {

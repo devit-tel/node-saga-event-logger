@@ -9,7 +9,6 @@ import {
   TaskExecutionTime,
 } from '../../store';
 import { ElasticsearchStore } from '../elasticsearch';
-import moment = require('moment');
 
 const mapEsResponseToEvent = R.compose(
   R.map(R.prop('_source')),
@@ -227,7 +226,8 @@ export class EventElasticsearchStore extends ElasticsearchStore
   };
 
   getWeeklyTaskExecuteTime = async (
-    now?: number | Date,
+    fromTimestamp: number,
+    toTimestamp: number,
   ): Promise<TaskExecutionTime[]> => {
     const response = await this.client.search({
       index: this.index,
@@ -239,8 +239,8 @@ export class EventElasticsearchStore extends ElasticsearchStore
         .query('match', 'details.status', State.TaskStates.Completed)
         .query('match', 'details.type', Task.TaskTypes.Task)
         .query('range', 'timestamp', {
-          gte: moment(now).startOf('week'),
-          lte: moment(now).endOf('week'),
+          gte: fromTimestamp,
+          lte: toTimestamp,
         })
         .rawOption('script_fields', {
           executionTime: {
@@ -262,8 +262,9 @@ export class EventElasticsearchStore extends ElasticsearchStore
   };
 
   getWeeklyTransactionsByStatus = async (
+    fromTimestamp: number,
+    toTimestamp: number,
     status: State.TransactionStates = State.TransactionStates.Running,
-    now?: number | Date,
   ): Promise<HistogramCount[]> => {
     const response = await this.client.search({
       index: this.index,
@@ -274,8 +275,8 @@ export class EventElasticsearchStore extends ElasticsearchStore
         .query('match', 'isError', false)
         .query('match', 'details.status', status)
         .query('range', 'timestamp', {
-          gte: moment(now).startOf('week'),
-          lte: moment(now).endOf('week'),
+          gte: fromTimestamp,
+          lte: toTimestamp,
         })
         .aggregation(
           'date_histogram',
