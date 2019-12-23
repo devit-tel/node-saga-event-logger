@@ -280,59 +280,55 @@ export class EventElasticsearchStore extends ElasticsearchStore
     tags: string[] = [],
     from: number = 0,
     size: number = 100,
+    statuses: State.TransactionStates[] = [State.TransactionStates.Running],
   ): Promise<ITransactionEventPaginate> => {
-    const query = {
-      query: {
-        bool: {
-          must: [
-            { match: { type: 'TRANSACTION' } },
-            { match: { isError: false } },
-            { match: { 'details.status': State.TransactionStates.Running } },
-            transactionId
-              ? {
-                  query_string: {
-                    default_field: 'transactionId',
-                    query: `*${transactionId}*`,
-                  },
-                }
-              : undefined,
-            {
-              range: {
-                timestamp: {
-                  gte: fromTimestamp,
-                  lte: toTimestamp,
-                },
-              },
-            },
-            ...tags.map((tag: string) => ({
-              match: {
-                'details.tags': tag,
-              },
-            })),
-          ].filter((query: any) => !!query),
-        },
-      },
-      from,
-      size,
-      sort: [
-        {
-          timestamp: {
-            order: 'desc',
+    try {
+      const body = bodybuilder()
+        .query('match', 'type', 'TRANSACTION')
+        .query('match', 'isError', false)
+        .query('match', 'type', 'TRANSACTION')
+        .query('range', 'timestamp', {
+          gte: fromTimestamp,
+          lte: toTimestamp,
+        })
+        .sort('timestamp', 'desc')
+        .from(from)
+        .size(size);
+
+      for (const tag of tags) {
+        body.query('match', 'details.tags', tag);
+      }
+
+      body.query('bool', (builder: bodybuilder.QuerySubFilterBuilder) => {
+        statuses.map((status: State.TransactionStates) =>
+          builder.orQuery('match', 'details.status', status),
+        );
+        return builder;
+      });
+
+      if (transactionId) {
+        body.query('query_string', {
+          query_string: {
+            default_field: 'transactionId',
+            query: `*${transactionId}*`,
           },
-        },
-      ],
-    };
+        });
+      }
 
-    const response = await this.client.search({
-      index: this.index,
-      type: 'event',
-      body: query,
-    });
+      const response = await this.client.search({
+        index: this.index,
+        type: 'event',
+        body: body.build(),
+      });
 
-    return {
-      total: response.hits.total,
-      events: mapEsResponseToEvent(response) as Event.ITransactionEvent[],
-    };
+      return {
+        total: response.hits.total,
+        events: mapEsResponseToEvent(response) as Event.ITransactionEvent[],
+      };
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
   };
 
   getTransactionData = async (
@@ -341,23 +337,12 @@ export class EventElasticsearchStore extends ElasticsearchStore
     const response = await this.client.search({
       index: this.index,
       type: 'event',
-      body: {
-        query: {
-          bool: {
-            must: [{ match: { transactionId } }],
-          },
-        },
-        from: 0,
-        size: 1000,
-        sort: [
-          {
-            timestamp: {
-              order: 'desc',
-            },
-          },
-        ],
-        aggs: {},
-      },
+      body: bodybuilder()
+        .query('match', 'transactionId', transactionId)
+        .sort('timestamp', 'desc')
+        .from(0)
+        .size(3000)
+        .build(),
     });
 
     return mapEsResponseToEvent(response) as Event.AllEvent[];
