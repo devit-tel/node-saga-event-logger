@@ -39,6 +39,7 @@ export interface IEventDataStore extends IStore {
     tags?: string[],
     from?: number,
     size?: number,
+    statuses?: State.TransactionStates[],
   ): Promise<ITransactionEventPaginate>;
   create(event: Event.AllEvent): Promise<Event.AllEvent>;
   bulkCreate(events: IAllEventWithId[]): Promise<any[]>;
@@ -74,6 +75,7 @@ export class EventStore {
     tags: string[] = [],
     from?: number,
     size?: number,
+    statuses?: State.TransactionStates[],
   ): Promise<ITransactionEventPaginate> {
     return this.client.listTransaction(
       fromTimestamp || 0,
@@ -82,6 +84,7 @@ export class EventStore {
       tags,
       from,
       size,
+      statuses,
     );
   }
 
