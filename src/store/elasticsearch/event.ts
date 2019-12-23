@@ -229,7 +229,6 @@ export class EventElasticsearchStore extends ElasticsearchStore
             script: "doc['details.taskName']",
           },
         })
-
         .build(),
     });
     return response.hits.hits.map(data => {
@@ -282,53 +281,48 @@ export class EventElasticsearchStore extends ElasticsearchStore
     size: number = 100,
     statuses: State.TransactionStates[] = [State.TransactionStates.Running],
   ): Promise<ITransactionEventPaginate> => {
-    try {
-      const body = bodybuilder()
-        .query('match', 'type', 'TRANSACTION')
-        .query('match', 'isError', false)
-        .query('match', 'type', 'TRANSACTION')
-        .query('range', 'timestamp', {
-          gte: fromTimestamp,
-          lte: toTimestamp,
-        })
-        .sort('timestamp', 'desc')
-        .from(from)
-        .size(size);
+    const body = bodybuilder()
+      .query('match', 'type', 'TRANSACTION')
+      .query('match', 'isError', false)
+      .query('match', 'type', 'TRANSACTION')
+      .query('range', 'timestamp', {
+        gte: fromTimestamp,
+        lte: toTimestamp,
+      })
+      .sort('timestamp', 'desc')
+      .from(from)
+      .size(size);
 
-      for (const tag of tags) {
-        body.query('match', 'details.tags', tag);
-      }
-
-      body.query('bool', (builder: bodybuilder.QuerySubFilterBuilder) => {
-        statuses.map((status: State.TransactionStates) =>
-          builder.orQuery('match', 'details.status', status),
-        );
-        return builder;
-      });
-
-      if (transactionId) {
-        body.query('query_string', {
-          query_string: {
-            default_field: 'transactionId',
-            query: `*${transactionId}*`,
-          },
-        });
-      }
-
-      const response = await this.client.search({
-        index: this.index,
-        type: 'event',
-        body: body.build(),
-      });
-
-      return {
-        total: response.hits.total,
-        events: mapEsResponseToEvent(response) as Event.ITransactionEvent[],
-      };
-    } catch (error) {
-      console.log(error);
-      return null;
+    for (const tag of tags) {
+      body.query('match', 'details.tags', tag);
     }
+
+    body.query('bool', (builder: bodybuilder.QuerySubFilterBuilder) => {
+      statuses.map((status: State.TransactionStates) =>
+        builder.orQuery('match', 'details.status', status),
+      );
+      return builder;
+    });
+
+    if (transactionId) {
+      body.query('query_string', {
+        query_string: {
+          default_field: 'transactionId',
+          query: `*${transactionId}*`,
+        },
+      });
+    }
+
+    const response = await this.client.search({
+      index: this.index,
+      type: 'event',
+      body: body.build(),
+    });
+
+    return {
+      total: response.hits.total,
+      events: mapEsResponseToEvent(response) as Event.ITransactionEvent[],
+    };
   };
 
   getTransactionData = async (
