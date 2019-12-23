@@ -27,8 +27,3 @@ router.get('/:transactionId', async (ctx: koaRouter.IRouterContext) => {
   const { transactionId } = ctx.params;
   return eventStore.getTransactionData(transactionId);
 });
-
-router.get('/:transactionId', async (ctx: koaRouter.IRouterContext) => {
-  const { transactionId } = ctx.params;
-  return eventStore.getTransactionData(transactionId);
-});
