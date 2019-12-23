@@ -204,6 +204,28 @@ export class EventElasticsearchStore extends ElasticsearchStore
       .catch((error: any) => console.log(error.message));
   }
 
+  getFalseEvents = async (
+    fromTimestamp: number,
+    toTimestamp: number,
+  ): Promise<Event.AllEvent[]> => {
+    const response = await this.client.search({
+      index: this.index,
+      type: 'event',
+      body: bodybuilder()
+        .query('match', 'isError', true)
+        .sort('timestamp', 'desc')
+        .query('range', 'timestamp', {
+          gte: fromTimestamp,
+          lte: toTimestamp,
+        })
+        .from(0)
+        .size(3000)
+        .build(),
+    });
+
+    return mapEsResponseToEvent(response) as Event.AllEvent[];
+  };
+
   getWeeklyTaskExecuteTime = async (
     now?: number | Date,
   ): Promise<TaskExecutionTime[]> => {
@@ -306,10 +328,8 @@ export class EventElasticsearchStore extends ElasticsearchStore
 
     if (transactionId) {
       body.query('query_string', {
-        query_string: {
-          default_field: 'transactionId',
-          query: `*${transactionId}*`,
-        },
+        default_field: 'transactionId',
+        query: `*${transactionId}*`,
       });
     }
 

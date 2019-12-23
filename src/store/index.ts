@@ -26,6 +26,10 @@ export interface ITransactionEventPaginate {
 }
 
 export interface IEventDataStore extends IStore {
+  getFalseEvents(
+    fromTimestamp: number,
+    toTimestamp: number,
+  ): Promise<Event.AllEvent[]>;
   getWeeklyTaskExecuteTime(now?: number | Date): Promise<TaskExecutionTime[]>;
   getWeeklyTransactionsByStatus(
     status: State.TransactionStates,
@@ -52,6 +56,12 @@ export class EventStore {
     if (this.client) throw new Error('Already set client');
     this.client = client;
   }
+  getFalseEvents = (
+    fromTimestamp: number,
+    toTimestamp: number,
+  ): Promise<Event.AllEvent[]> => {
+    return this.client.getFalseEvents(fromTimestamp, toTimestamp);
+  };
 
   getWeeklyTaskExecuteTime(now?: number | Date): Promise<TaskExecutionTime[]> {
     return this.client.getWeeklyTaskExecuteTime(now);
