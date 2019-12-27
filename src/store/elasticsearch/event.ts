@@ -187,6 +187,9 @@ const ES_EVENTS_MAPPING = {
   },
 };
 
+const escapeQueryString = (text: string) =>
+  text.replace(/(&&|\|\||!|\(|\)|{|}|\[|\]|\^|"|~|\*|\?|:)/gi, '\\$1');
+
 export class EventElasticsearchStore extends ElasticsearchStore
   implements IEventDataStore {
   index: string;
@@ -330,7 +333,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
     if (transactionId) {
       body.query('query_string', {
         default_field: 'transactionId',
-        query: `*${transactionId}*`,
+        query: `*${escapeQueryString(transactionId)}*`,
       });
     }
 
