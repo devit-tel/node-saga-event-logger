@@ -37,7 +37,7 @@ export interface IEventDataStore extends IStore {
   getTransactionDateHistogram(
     fromTimestamp: number,
     toTimestamp: number,
-    status: State.TransactionStates,
+    statuses: State.TransactionStates[],
   ): Promise<HistogramCount[]>;
   getTransactionData(transactionId: string): Promise<Event.AllEvent[]>;
   getTraansactionEvents(
@@ -77,12 +77,12 @@ export class EventStore {
   getTransactionDateHistogram(
     fromTimestamp: number,
     toTimestamp: number,
-    status?: State.TransactionStates,
+    statuses?: State.TransactionStates[],
   ): Promise<HistogramCount[]> {
     return this.client.getTransactionDateHistogram(
       fromTimestamp,
       toTimestamp,
-      status,
+      statuses,
     );
   }
 

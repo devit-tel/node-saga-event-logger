@@ -1,15 +1,16 @@
 import koaRouter = require('koa-router');
+import { State } from '@melonade/melonade-declaration';
 import { eventStore } from '../../../../store';
-import { toNumber } from '../../../../utils/common';
+import { jsonTryParse, toNumber } from '../../../../utils/common';
 
 export const router = new koaRouter();
 
 router.get('/transaction-histogram', async (ctx: koaRouter.IRouterContext) => {
-  const { status, fromTimestamp, toTimestamp } = ctx.query;
+  const { statuses, fromTimestamp, toTimestamp } = ctx.query;
   return eventStore.getTransactionDateHistogram(
     toNumber(fromTimestamp, 0),
     toNumber(toTimestamp, Date.now()),
-    status,
+    jsonTryParse(statuses, [State.TransactionStates.Running]),
   );
 });
 
