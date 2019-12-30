@@ -187,6 +187,9 @@ const ES_EVENTS_MAPPING = {
   },
 };
 
+const escapeQueryString = (text: string) =>
+  text.replace(/(&&|\|\||!|\(|\)|{|}|\[|\]|\^|"|~|\*|\?|:)/gi, '\\$1');
+
 export class EventElasticsearchStore extends ElasticsearchStore
   implements IEventDataStore {
   index: string;
@@ -264,29 +267,37 @@ export class EventElasticsearchStore extends ElasticsearchStore
   getTransactionDateHistogram = async (
     fromTimestamp: number,
     toTimestamp: number,
-    status: State.TransactionStates = State.TransactionStates.Running,
+    statuses: State.TransactionStates[] = [State.TransactionStates.Running],
   ): Promise<HistogramCount[]> => {
+    const body = bodybuilder()
+      .query('match', 'type', 'TRANSACTION')
+      .query('match', 'isError', false)
+
+      .query('range', 'timestamp', {
+        gte: fromTimestamp,
+        lte: toTimestamp,
+      })
+      .aggregation(
+        'date_histogram',
+        {
+          field: 'timestamp',
+          interval: 'hour',
+        },
+        'timestamp_hour',
+      );
+
+    body.query('bool', (builder: bodybuilder.QuerySubFilterBuilder) => {
+      statuses.map((status: State.TransactionStates) =>
+        builder.orQuery('match', 'details.status', status),
+      );
+      return builder;
+    });
+
     const response = await this.client.search({
       index: this.index,
       type: 'event',
       size: 0,
-      body: bodybuilder()
-        .query('match', 'type', 'TRANSACTION')
-        .query('match', 'isError', false)
-        .query('match', 'details.status', status)
-        .query('range', 'timestamp', {
-          gte: fromTimestamp,
-          lte: toTimestamp,
-        })
-        .aggregation(
-          'date_histogram',
-          {
-            field: 'timestamp',
-            interval: 'hour',
-          },
-          'timestamp_hour',
-        )
-        .build(),
+      body: body.build(),
     });
 
     return response.aggregations['timestamp_hour'].buckets.map((data: any) => ({
@@ -330,7 +341,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
     if (transactionId) {
       body.query('query_string', {
         default_field: 'transactionId',
-        query: `*${transactionId}*`,
+        query: `*${escapeQueryString(transactionId)}*`,
       });
     }
 
