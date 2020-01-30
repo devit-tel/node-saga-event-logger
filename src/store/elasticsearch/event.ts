@@ -214,6 +214,20 @@ export class EventElasticsearchStore extends ElasticsearchStore
       index: this.index,
       type: 'event',
       body: bodybuilder()
+        .filter('bool', b =>
+          b
+            .orFilter('bool')
+            .notFilter('bool', nb =>
+              nb
+                .filter('match', 'details.status', State.TaskStates.Timeout)
+                .filter('match', 'type', 'TASK'),
+            )
+            .notFilter('bool', nb =>
+              nb
+                .filter('match', 'details.status', State.TaskStates.AckTimeOut)
+                .filter('match', 'type', 'TASK'),
+            ),
+        )
         .query('match', 'isError', true)
         .sort('timestamp', 'desc')
         .query('range', 'timestamp', {
@@ -272,7 +286,6 @@ export class EventElasticsearchStore extends ElasticsearchStore
     const body = bodybuilder()
       .query('match', 'type', 'TRANSACTION')
       .query('match', 'isError', false)
-
       .query('range', 'timestamp', {
         gte: fromTimestamp,
         lte: toTimestamp,
