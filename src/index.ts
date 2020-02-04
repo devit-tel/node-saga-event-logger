@@ -1,6 +1,6 @@
 import * as cluster from 'cluster';
-import * as os from 'os';
 import * as dotenv from 'dotenv';
+import * as os from 'os';
 
 dotenv.config();
 
@@ -11,8 +11,10 @@ const maxRunnerNumber = Number.isNaN(+process.env['runners.max'])
 if (cluster.isMaster) {
   cluster.on('exit', (worker: cluster.Worker) => {
     console.log(`Worker: ${worker.id} are dead`);
-    cluster.fork();
-    console.log(`Starting new worker`);
+    setTimeout(() => {
+      cluster.fork();
+      console.log(`Starting new worker`);
+    }, 1000);
   });
 
   cluster.on('fork', (worker: cluster.Worker) => {
