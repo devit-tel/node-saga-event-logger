@@ -1,5 +1,6 @@
-import { poll, consumerEventClient, IAllEventWithId } from './kafka';
+import { consumerEventClient, IAllEventWithId, poll } from './kafka';
 import { eventStore } from './store';
+import { sleep } from './utils/common';
 
 const retryBulkCreate = async (
   events: IAllEventWithId[],
@@ -31,7 +32,8 @@ export const executor = async () => {
     }
   } catch (error) {
     // Handle error here
-    console.log(error);
+    console.warn(error);
+    await sleep(1000);
   } finally {
     setImmediate(executor);
   }
