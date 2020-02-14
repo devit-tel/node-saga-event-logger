@@ -60,6 +60,7 @@ export const kafkaEventConfig = {
 
 export const eventStore = {
   type: process.env['event-store.type'],
+  prefixId: process.env['event-store.prefix-id'] || '',
   elasticsearchConfig: {
     index: `melonade-${melonade.namespace}-event`,
     config: pickAndReplaceFromENV('^event-store\\.elasticsearch\\.'),

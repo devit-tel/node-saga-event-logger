@@ -76,7 +76,7 @@ export const poll = (
         resolve(
           messages.map((message: Kafka.kafkaConsumerMessage) => {
             return {
-              _id: `${message.topic}-${message.partition}-${message.offset}`,
+              _id: `${config.eventStore.prefixId}-${message.topic}-${message.partition}-${message.offset}`,
               event: jsonTryParse(message.value.toString(), {}),
             };
           }),
