@@ -3,10 +3,10 @@ import * as bodybuilder from 'bodybuilder';
 import * as R from 'ramda';
 import { IAllEventWithId } from '../../kafka';
 import {
-  HistogramCount,
   IEventDataStore,
+  IHistogramCount,
+  ITaskExecutionTime,
   ITransactionEventPaginate,
-  TaskExecutionTime,
 } from '../../store';
 import { ElasticsearchStore } from '../elasticsearch';
 
@@ -245,7 +245,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
   getTaskExecuteime = async (
     fromTimestamp: number,
     toTimestamp: number,
-  ): Promise<TaskExecutionTime[]> => {
+  ): Promise<ITaskExecutionTime[]> => {
     const response = await this.client.search({
       index: this.index,
       type: 'event',
@@ -267,6 +267,9 @@ export class EventElasticsearchStore extends ElasticsearchStore
           taskName: {
             script: "doc['details.taskName']",
           },
+          executedAt: {
+            script: "doc['timestamp']",
+          },
         })
         .build(),
     });
@@ -274,6 +277,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
       return {
         taskName: R.pathOr('', ['fields', 'taskName', 0], data),
         executionTime: R.pathOr(0, ['fields', 'executionTime', 0], data),
+        executedAt: R.pathOr(0, ['fields', 'executedAt', 0], data),
       };
     });
   };
@@ -282,7 +286,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
     fromTimestamp: number,
     toTimestamp: number,
     statuses: State.TransactionStates[] = [State.TransactionStates.Running],
-  ): Promise<HistogramCount[]> => {
+  ): Promise<IHistogramCount[]> => {
     const body = bodybuilder()
       .query('match', 'type', 'TRANSACTION')
       .query('match', 'isError', false)

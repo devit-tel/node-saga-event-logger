@@ -6,14 +6,15 @@ export enum StoreType {
   Elasticsearch = 'ELASTICSEARCH',
 }
 
-export interface HistogramCount {
+export interface IHistogramCount {
   date: number | Date;
   count: number;
 }
 
-export interface TaskExecutionTime {
+export interface ITaskExecutionTime {
   executionTime: number;
   taskName: string;
+  executedAt: number | Date | string;
 }
 
 export interface IStore {
@@ -33,12 +34,12 @@ export interface IEventDataStore extends IStore {
   getTaskExecuteime(
     fromTimestamp: number,
     toTimestamp: number,
-  ): Promise<TaskExecutionTime[]>;
+  ): Promise<ITaskExecutionTime[]>;
   getTransactionDateHistogram(
     fromTimestamp: number,
     toTimestamp: number,
     statuses: State.TransactionStates[],
-  ): Promise<HistogramCount[]>;
+  ): Promise<IHistogramCount[]>;
   getTransactionData(transactionId: string): Promise<Event.AllEvent[]>;
   getTraansactionEvents(
     fromTimestamp: number,
@@ -70,7 +71,7 @@ export class EventStore {
   getTaskExecuteime(
     fromTimestamp: number,
     toTimestamp: number,
-  ): Promise<TaskExecutionTime[]> {
+  ): Promise<ITaskExecutionTime[]> {
     return this.client.getTaskExecuteime(fromTimestamp, toTimestamp);
   }
 
@@ -78,7 +79,7 @@ export class EventStore {
     fromTimestamp: number,
     toTimestamp: number,
     statuses?: State.TransactionStates[],
-  ): Promise<HistogramCount[]> {
+  ): Promise<IHistogramCount[]> {
     return this.client.getTransactionDateHistogram(
       fromTimestamp,
       toTimestamp,

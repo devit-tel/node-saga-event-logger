@@ -1,11 +1,10 @@
-# node-saga-pm
+# Melonade event logger
 
-This is prototype of saga implementation, written in Node.
+Melonade's event and statistic's store
 
 ## Tasks
 
-- [ ] Idempotent indexing
+- [x] Idempotent indexing
 - [ ] Query results
-- [ ] GroupId namespace
 
 ## Known issues
