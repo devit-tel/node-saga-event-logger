@@ -271,6 +271,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
             script: "doc['timestamp']",
           },
         })
+        .sort('timestamp', 'desc')
         .build(),
     });
     return response.hits.hits.map(data => {
