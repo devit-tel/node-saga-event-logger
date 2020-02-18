@@ -41,7 +41,7 @@ export interface IEventDataStore extends IStore {
     statuses: State.TransactionStates[],
   ): Promise<IHistogramCount[]>;
   getTransactionData(transactionId: string): Promise<Event.AllEvent[]>;
-  getTraansactionEvents(
+  getTransactionEvents(
     fromTimestamp: number,
     toTimestamp: number,
     transactionId?: string,
@@ -100,7 +100,7 @@ export class EventStore {
     size?: number,
     statuses?: State.TransactionStates[],
   ): Promise<ITransactionEventPaginate> {
-    return this.client.getTraansactionEvents(
+    return this.client.getTransactionEvents(
       fromTimestamp || 0,
       toTimestamp || Date.now(),
       transactionId,

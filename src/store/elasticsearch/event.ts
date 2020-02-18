@@ -324,7 +324,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
     }));
   };
 
-  getTraansactionEvents = async (
+  getTransactionEvents = async (
     fromTimestamp: number,
     toTimestamp: number,
     transactionId?: string,
