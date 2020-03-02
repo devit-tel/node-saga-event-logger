@@ -300,6 +300,10 @@ export class EventElasticsearchStore extends ElasticsearchStore
         {
           field: 'timestamp',
           interval: 'hour',
+          extended_bounds: {
+            min: fromTimestamp,
+            max: toTimestamp,
+          },
         },
         'timestamp_hour',
       );
