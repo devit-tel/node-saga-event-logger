@@ -169,6 +169,10 @@ const ES_EVENTS_MAPPING = {
           workflowId: {
             type: 'keyword',
           },
+          taskPath: {
+            type: 'object',
+            enabled: false,
+          },
         },
       },
       isError: {
