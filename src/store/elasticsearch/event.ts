@@ -173,6 +173,16 @@ const ES_EVENTS_MAPPING = {
             type: 'object',
             enabled: false,
           },
+          parent: {
+            properties: {
+              transactionId: {
+                type: 'keyword',
+              },
+              taskId: {
+                type: 'keyword',
+              },
+            },
+          },
         },
       },
       isError: {
@@ -207,7 +217,22 @@ export class EventElasticsearchStore extends ElasticsearchStore
           mappings: ES_EVENTS_MAPPING,
         },
       })
-      .catch((error: any) => console.log(error.message));
+      .catch(async (error: any) => {
+        if ((error.message || '').includes('already exists')) {
+          console.log('running elasticsearch migrate mapping');
+          try {
+            await this.client.indices.putMapping({
+              index: index,
+              type: 'event',
+              body: ES_EVENTS_MAPPING,
+            });
+          } catch (error) {
+            console.error(error.message);
+          }
+        } else {
+          console.error(error.message);
+        }
+      });
   }
 
   getFalseEvents = async (
@@ -425,7 +450,10 @@ export class EventElasticsearchStore extends ElasticsearchStore
         return result;
       }, []),
     });
-    if (resp.errors) throw new Error('Fail to inserts');
+    if (resp.errors) {
+      console.log(resp.errors);
+      throw new Error('Fail to inserts');
+    }
     return events;
   };
 }
