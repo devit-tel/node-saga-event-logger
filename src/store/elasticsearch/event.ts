@@ -357,7 +357,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
     }));
   };
 
-  getTransactionEvents = async (
+  listTransaction = async (
     fromTimestamp: number,
     toTimestamp: number,
     transactionId?: string,
@@ -365,6 +365,8 @@ export class EventElasticsearchStore extends ElasticsearchStore
     from: number = 0,
     size: number = 100,
     statuses: State.TransactionStates[] = [State.TransactionStates.Running],
+    workflowName?: string,
+    workflowRev?: string,
   ): Promise<ITransactionEventPaginate> => {
     const body = bodybuilder()
       .query('match', 'type', 'TRANSACTION')
@@ -394,6 +396,14 @@ export class EventElasticsearchStore extends ElasticsearchStore
         default_field: 'transactionId',
         query: `*${escapeQueryString(transactionId)}*`,
       });
+    }
+
+    if (workflowName) {
+      body.query('match', 'details.workflowDefinition.name', workflowName);
+    }
+
+    if (workflowRev) {
+      body.query('match', 'details.workflowDefinition.rev', workflowRev);
     }
 
     const response = await this.client.search({

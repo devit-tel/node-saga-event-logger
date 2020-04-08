@@ -41,7 +41,7 @@ export interface IEventDataStore extends IStore {
     statuses: State.TransactionStates[],
   ): Promise<IHistogramCount[]>;
   getTransactionData(transactionId: string): Promise<Event.AllEvent[]>;
-  getTransactionEvents(
+  listTransaction(
     fromTimestamp: number,
     toTimestamp: number,
     transactionId?: string,
@@ -49,6 +49,8 @@ export interface IEventDataStore extends IStore {
     from?: number,
     size?: number,
     statuses?: State.TransactionStates[],
+    workflowName?: string,
+    workflowRev?: string,
   ): Promise<ITransactionEventPaginate>;
   create(event: Event.AllEvent): Promise<Event.AllEvent>;
   bulkCreate(events: IAllEventWithId[]): Promise<any[]>;
@@ -91,7 +93,7 @@ export class EventStore {
     return this.client.getTransactionData(transactionId);
   }
 
-  listTransaction(
+  listTransactions(
     fromTimestamp: number,
     toTimestamp: number,
     transactionId?: string,
@@ -99,8 +101,10 @@ export class EventStore {
     from?: number,
     size?: number,
     statuses?: State.TransactionStates[],
+    workflowName?: string,
+    workflowRev?: string,
   ): Promise<ITransactionEventPaginate> {
-    return this.client.getTransactionEvents(
+    return this.client.listTransaction(
       fromTimestamp || 0,
       toTimestamp || Date.now(),
       transactionId,
@@ -108,6 +112,8 @@ export class EventStore {
       from,
       size,
       statuses,
+      workflowName,
+      workflowRev,
     );
   }
 
