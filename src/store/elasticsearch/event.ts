@@ -181,7 +181,16 @@ const ES_EVENTS_MAPPING = {
               taskId: {
                 type: 'keyword',
               },
+              taskType: {
+                type: 'keyword',
+              },
+              depth: {
+                type: 'long',
+              },
             },
+          },
+          transactionDepth: {
+            type: 'long',
           },
         },
       },
