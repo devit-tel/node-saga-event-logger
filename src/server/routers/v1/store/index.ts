@@ -14,8 +14,10 @@ router.get('/', async (ctx: koaRouter.IRouterContext) => {
     size,
     transactionId,
     statuses,
+    workflowName,
+    workflowRev,
   } = ctx.query;
-  return eventStore.listTransaction(
+  return eventStore.listTransactions(
     toNumber(fromTimestamp, 0),
     toNumber(toTimestamp, Date.now()),
     transactionId,
@@ -23,6 +25,8 @@ router.get('/', async (ctx: koaRouter.IRouterContext) => {
     toNumber(from, 0),
     toNumber(size, 100),
     jsonTryParse(statuses, [State.TransactionStates.Running]),
+    workflowName,
+    workflowRev,
   );
 });
 

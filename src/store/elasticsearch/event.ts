@@ -173,6 +173,25 @@ const ES_EVENTS_MAPPING = {
             type: 'object',
             enabled: false,
           },
+          parent: {
+            properties: {
+              transactionId: {
+                type: 'keyword',
+              },
+              taskId: {
+                type: 'keyword',
+              },
+              taskType: {
+                type: 'keyword',
+              },
+              depth: {
+                type: 'long',
+              },
+            },
+          },
+          transactionDepth: {
+            type: 'long',
+          },
         },
       },
       isError: {
@@ -207,7 +226,22 @@ export class EventElasticsearchStore extends ElasticsearchStore
           mappings: ES_EVENTS_MAPPING,
         },
       })
-      .catch((error: any) => console.log(error.message));
+      .catch(async (error: any) => {
+        if ((error.message || '').includes('already exists')) {
+          console.log('running elasticsearch migrate mapping');
+          try {
+            await this.client.indices.putMapping({
+              index: index,
+              type: 'event',
+              body: ES_EVENTS_MAPPING,
+            });
+          } catch (error) {
+            console.error(error.message);
+          }
+        } else {
+          console.error(error.message);
+        }
+      });
   }
 
   getFalseEvents = async (
@@ -332,7 +366,7 @@ export class EventElasticsearchStore extends ElasticsearchStore
     }));
   };
 
-  getTransactionEvents = async (
+  listTransaction = async (
     fromTimestamp: number,
     toTimestamp: number,
     transactionId?: string,
@@ -340,6 +374,8 @@ export class EventElasticsearchStore extends ElasticsearchStore
     from: number = 0,
     size: number = 100,
     statuses: State.TransactionStates[] = [State.TransactionStates.Running],
+    workflowName?: string,
+    workflowRev?: string,
   ): Promise<ITransactionEventPaginate> => {
     const body = bodybuilder()
       .query('match', 'type', 'TRANSACTION')
@@ -369,6 +405,14 @@ export class EventElasticsearchStore extends ElasticsearchStore
         default_field: 'transactionId',
         query: `*${escapeQueryString(transactionId)}*`,
       });
+    }
+
+    if (workflowName) {
+      body.query('match', 'details.workflowDefinition.name', workflowName);
+    }
+
+    if (workflowRev) {
+      body.query('match', 'details.workflowDefinition.rev', workflowRev);
     }
 
     const response = await this.client.search({
@@ -425,7 +469,10 @@ export class EventElasticsearchStore extends ElasticsearchStore
         return result;
       }, []),
     });
-    if (resp.errors) throw new Error('Fail to inserts');
+    if (resp.errors) {
+      console.log(resp.errors);
+      throw new Error('Fail to inserts');
+    }
     return events;
   };
 }
