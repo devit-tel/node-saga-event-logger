@@ -99,70 +99,8 @@ const ES_EVENTS_MAPPING = {
                 type: 'keyword',
               },
               tasks: {
-                properties: {
-                  ackTimeout: {
-                    type: 'long',
-                  },
-                  inputParameters: {
-                    type: 'object',
-                    enabled: false,
-                  },
-                  name: {
-                    type: 'keyword',
-                  },
-                  parallelTasks: {
-                    properties: {
-                      ackTimeout: {
-                        type: 'long',
-                      },
-                      inputParameters: {
-                        type: 'object',
-                        enabled: false,
-                      },
-                      name: {
-                        type: 'keyword',
-                      },
-                      retry: {
-                        properties: {
-                          delay: {
-                            type: 'long',
-                          },
-                          limit: {
-                            type: 'long',
-                          },
-                        },
-                      },
-                      taskReferenceName: {
-                        type: 'keyword',
-                      },
-                      timeout: {
-                        type: 'long',
-                      },
-                      type: {
-                        type: 'keyword',
-                      },
-                    },
-                  },
-                  retry: {
-                    properties: {
-                      delay: {
-                        type: 'long',
-                      },
-                      limit: {
-                        type: 'long',
-                      },
-                    },
-                  },
-                  taskReferenceName: {
-                    type: 'keyword',
-                  },
-                  timeout: {
-                    type: 'long',
-                  },
-                  type: {
-                    type: 'keyword',
-                  },
-                },
+                type: 'object',
+                enabled: false,
               },
             },
           },
