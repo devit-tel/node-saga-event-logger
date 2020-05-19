@@ -5,7 +5,7 @@ import { sleep } from './utils/common';
 const retryBulkCreate = async (
   events: IAllEventWithId[],
   retries: number,
-  deley: number,
+  delay: number,
 ) => {
   try {
     await eventStore.bulkCreate(events);
@@ -14,8 +14,8 @@ const retryBulkCreate = async (
       setTimeout(() => {
         console.warn(`Retrying bulk create ${retries} times`);
         console.error(JSON.stringify(events));
-        retryBulkCreate(events, retries--, deley);
-      }, deley);
+        retryBulkCreate(events, retries--, delay);
+      }, delay);
     } else {
       console.error(`Cannot retry`);
       console.error(JSON.stringify(events));
@@ -27,7 +27,7 @@ export const executor = async () => {
   try {
     const events: IAllEventWithId[] = await poll(consumerEventClient, 200);
     if (events.length) {
-      await retryBulkCreate(events, Number.MAX_VALUE, 5000);
+      await retryBulkCreate(events, Number.MAX_VALUE, 10000);
       console.log(`Inserted ${events.length} rows`);
       consumerEventClient.commit();
     }
