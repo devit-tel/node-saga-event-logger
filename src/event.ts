@@ -13,6 +13,7 @@ const retryBulkCreate = async (
     if (retries > 0) {
       setTimeout(() => {
         console.warn(`Retrying bulk create ${retries} times`);
+        console.error(JSON.stringify(events));
         retryBulkCreate(events, retries--, deley);
       }, deley);
     } else {
