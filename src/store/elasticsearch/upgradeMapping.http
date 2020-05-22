@@ -40,6 +40,10 @@ Content-Type: application/json
               "type": "object",
               "enabled": false
             },
+            "dynamicTasks": {
+              "type": "object",
+              "enabled": false
+            },
             "retries": {
               "type": "long"
             },
