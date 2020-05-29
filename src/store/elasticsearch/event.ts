@@ -47,6 +47,10 @@ const ES_EVENTS_MAPPING = {
             type: 'object',
             enabled: false,
           },
+          dynamicTasks: {
+            type: 'object',
+            enabled: false,
+          },
           retries: {
             type: 'long',
           },
