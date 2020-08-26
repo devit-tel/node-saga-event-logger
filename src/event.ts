@@ -23,18 +23,18 @@ const retryBulkCreate = async (
 };
 
 export const executor = async () => {
-  try {
-    const events: IAllEventWithId[] = await poll(consumerEventClient, 200);
-    if (events.length) {
-      await retryBulkCreate(events, Number.MAX_VALUE, 10000);
-      console.log(`Inserted ${events.length} rows`);
-      consumerEventClient.commit();
+  while (true) {
+    try {
+      const events: IAllEventWithId[] = await poll(consumerEventClient, 200);
+      if (events.length) {
+        await retryBulkCreate(events, Number.MAX_VALUE, 10000);
+        console.log(`Inserted ${events.length} rows`);
+        consumerEventClient.commit();
+      }
+    } catch (error) {
+      // Handle error here
+      console.warn(error);
+      await sleep(1000);
     }
-  } catch (error) {
-    // Handle error here
-    console.warn(error);
-    await sleep(1000);
-  } finally {
-    setImmediate(executor);
   }
 };
