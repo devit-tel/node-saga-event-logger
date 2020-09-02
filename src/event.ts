@@ -10,6 +10,7 @@ const retryBulkCreate = async (
   try {
     await eventStore.bulkCreate(events);
   } catch (error) {
+    console.warn('Bulk error', error);
     if (retries > 0) {
       setTimeout(() => {
         console.warn(`Retrying bulk create ${retries} times`);
