@@ -1,5 +1,5 @@
-@esHost = http://elasticsearch.datastore.staging.tel.internal
-@namespace = staging
+@esHost = http://localhost:9300
+@namespace = docker-compose
 @indexName = melonade-{{namespace}}-event
 
 
