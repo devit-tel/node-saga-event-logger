@@ -1,5 +1,5 @@
-@esHost = http://localhost:9300
-@namespace = docker-compose
+@esHost = http://elasticsearch.datastore.staging.tel.internal
+@namespace = staging
 @indexName = melonade-{{namespace}}-event
 
 
@@ -10,6 +10,7 @@ Content-Type: application/json
 {
   "mappings": {
     "event": {
+      "dynamic": false,
       "properties": {
         "details": {
           "properties": {
@@ -126,6 +127,27 @@ Content-Type: application/json
             },
             "transactionDepth": {
               "type": "long"
+            },
+            "decisions": {
+              "type": "object",
+              "enabled": false
+            },
+            "defaultDecision": {
+              "type": "object",
+              "enabled": false
+            },
+            "workflowRef": {
+              "properties": {
+                "name": {
+                  "type": "keyword"
+                },
+                "ref": {
+                  "type": "keyword"
+                },
+                "rev": {
+                  "type": "keyword"
+                }
+              }
             }
           }
         },
@@ -141,6 +163,13 @@ Content-Type: application/json
         "type": {
           "type": "keyword"
         }
+      }
+    }
+  },
+  "settings": {
+    "mapping": {
+      "total_fields": {
+        "limit": 2000
       }
     }
   }
