@@ -17,6 +17,7 @@ const mapEsResponseToEvent = R.compose(
 
 const ES_EVENTS_MAPPING = {
   event: {
+    dynamic: false,
     properties: {
       details: {
         properties: {
@@ -134,6 +135,27 @@ const ES_EVENTS_MAPPING = {
           transactionDepth: {
             type: 'long',
           },
+          decisions: {
+            type: 'object',
+            enabled: false,
+          },
+          defaultDecision: {
+            type: 'object',
+            enabled: false,
+          },
+          workflowRef: {
+            properties: {
+              name: {
+                type: 'keyword',
+              },
+              ref: {
+                type: 'keyword',
+              },
+              rev: {
+                type: 'keyword',
+              },
+            },
+          },
         },
       },
       isError: {
@@ -166,6 +188,13 @@ export class EventElasticsearchStore extends ElasticsearchStore
         index: index,
         body: {
           mappings: ES_EVENTS_MAPPING,
+          settings: {
+            mapping: {
+              total_fields: {
+                limit: 2000,
+              },
+            },
+          },
         },
       })
       .catch(async (error: any) => {
