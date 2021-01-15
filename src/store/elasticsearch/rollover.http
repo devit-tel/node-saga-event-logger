@@ -1,0 +1,217 @@
+@esHost = http://localhost:9300
+@namespace = docker-compose
+@indexName = melonade-{{namespace}}-event
+
+
+
+# @name createTemplate
+PUT {{esHost}}/_template/{{indexName}} HTTP/1.1
+Content-Type: application/json
+
+{
+  "index_patterns": ["{{indexName}}*"],
+  "mappings": {
+    "event": {
+      "dynamic": false,
+      "properties": {
+        "details": {
+          "properties": {
+            "ackTimeout": {
+              "type": "date"
+            },
+            "createTime": {
+              "type": "date"
+            },
+            "endTime": {
+              "type": "date"
+            },
+            "input": {
+              "type": "object",
+              "enabled": false
+            },
+            "isRetried": {
+              "type": "boolean"
+            },
+            "logs": {
+              "type": "text"
+            },
+            "output": {
+              "type": "object",
+              "enabled": false
+            },
+            "parallelTasks": {
+              "type": "object",
+              "enabled": false
+            },
+            "dynamicTasks": {
+              "type": "object",
+              "enabled": false
+            },
+            "retries": {
+              "type": "long"
+            },
+            "retryDelay": {
+              "type": "long"
+            },
+            "startTime": {
+              "type": "date"
+            },
+            "status": {
+              "type": "keyword"
+            },
+            "tags": {
+              "type": "keyword"
+            },
+            "taskId": {
+              "type": "keyword"
+            },
+            "taskName": {
+              "type": "keyword"
+            },
+            "taskReferenceName": {
+              "type": "keyword"
+            },
+            "timeout": {
+              "type": "long"
+            },
+            "transactionId": {
+              "type": "keyword"
+            },
+            "type": {
+              "type": "keyword"
+            },
+            "workflowDefinition": {
+              "properties": {
+                "description": {
+                  "type": "text"
+                },
+                "failureStrategy": {
+                  "type": "keyword"
+                },
+                "name": {
+                  "type": "keyword"
+                },
+                "outputParameters": {
+                  "type": "object",
+                  "enabled": false
+                },
+                "rev": {
+                  "type": "keyword"
+                },
+                "tasks": {
+                  "type": "object",
+                  "enabled": false
+                }
+              }
+            },
+            "workflowId": {
+              "type": "keyword"
+            },
+            "taskPath": {
+              "type": "object",
+              "enabled": false
+            },
+            "parent": {
+              "properties": {
+                "transactionId": {
+                  "type": "keyword"
+                },
+                "taskId": {
+                  "type": "keyword"
+                },
+                "taskType": {
+                  "type": "keyword"
+                },
+                "depth": {
+                  "type": "long"
+                }
+              }
+            },
+            "transactionDepth": {
+              "type": "long"
+            },
+            "decisions": {
+              "type": "object",
+              "enabled": false
+            },
+            "defaultDecision": {
+              "type": "object",
+              "enabled": false
+            },
+            "workflowRef": {
+              "properties": {
+                "name": {
+                  "type": "keyword"
+                },
+                "ref": {
+                  "type": "keyword"
+                },
+                "rev": {
+                  "type": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "isError": {
+          "type": "boolean"
+        },
+        "timestamp": {
+          "type": "date"
+        },
+        "transactionId": {
+          "type": "keyword"
+        },
+        "type": {
+          "type": "keyword"
+        }
+      }
+    }
+  },
+  "settings": {
+    "mapping": {
+      "total_fields": {
+        "limit": 2000
+      }
+    }
+  }
+}
+
+###
+
+# @name getTemplate
+GET {{esHost}}/_template/{{indexName}} HTTP/1.1
+
+
+###
+
+# @name addAliases
+POST {{esHost}}/_aliases HTTP/1.1
+Content-Type: application/json
+
+{
+  "actions": [
+    {
+      "add": {
+        "alias": "{{indexName}}",
+        "index": "{{indexName}}-hot",
+        "is_write_index": true
+      }
+    }
+  ]
+}
+
+###
+
+# @name rollover
+POST {{esHost}}/{{indexName}}/_rollover/{{indexName}}-cold
+Content-Type: application/json
+
+{
+  "conditions": {
+    "max_age":   "7d"
+  },
+  "settings": {
+    "index.number_of_shards": 1
+  }
+}
