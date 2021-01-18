@@ -194,7 +194,7 @@ Content-Type: application/json
     {
       "add": {
         "alias": "{{indexName}}",
-        "index": "{{indexName}}-hot",
+        "index": "{{indexName}}-1",
         "is_write_index": true
       }
     }
@@ -203,13 +203,31 @@ Content-Type: application/json
 
 ###
 
+# @name aliasTemplate
+
+PUT {{esHost}}/%3C{{indexName}}-%7Bnow%2Fd%7D-1%3E
+Content-Type: application/json
+
+{
+  "aliases": {
+    "{{indexName}}": {}
+  }
+}
+
+###
+
+POST {{esHost}}/{{indexName}}/_refresh
+
+###
+
 # @name rollover
-POST {{esHost}}/{{indexName}}/_rollover/{{indexName}}-cold
+POST {{esHost}}/{{indexName}}/_rollover
 Content-Type: application/json
 
 {
   "conditions": {
-    "max_age":   "7d"
+    "max_age":   "1d",
+    "max_size": "10gb"
   },
   "settings": {
     "index.number_of_shards": 1
